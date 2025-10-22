@@ -24,6 +24,21 @@ export const DrawEventZ = z.discriminatedUnion("type", [
         type: z.literal("block.finalized_all"),
         drawId: z.string(),
         explorers: z.array(SolanaBlockZ),
+        beaconHex: z.string().optional(),     // <-- новое поле
+    }),
+    z.object({
+        type: z.literal("mix.trace"),
+        drawId: z.string(),
+        beaconHex: z.string(),
+        pubComponentHex: z.string(),
+        hkdfSaltHex: z.string(),
+        seedHex: z.string(),
+        chachaFirst16Hex: z.string(),
+        u64: z.string(),
+        u01: z.object({
+            fraction: z.object({ num: z.string(), den: z.string() }),
+            decimal18: z.string(),
+        }),
     }),
     z.object({
         type: z.literal("mix.start"),
