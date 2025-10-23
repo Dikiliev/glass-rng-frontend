@@ -1,24 +1,34 @@
-import { type DrawEvent, DrawEventZ } from "./types";
+// src/lib/stream.ts
+import { DrawEventSchema, type DrawEvent } from "./types";
 
-export type Unsubscribe = () => void;
+export function subscribeDrawSSE(
+    drawId: string,
+    onEvent: (e: DrawEvent) => void
+) {
+    const es = new EventSource(`/api/draws/${drawId}/stream`);
 
-export function subscribeDrawSSE(drawId: string, onEvent: (e: DrawEvent) => void): Unsubscribe {
-    const es = new EventSource(`/api/draws/${drawId}/stream`, { withCredentials: false });
 
     es.onmessage = (ev) => {
+        let raw: unknown;
         try {
-            const parsed = DrawEventZ.parse(JSON.parse(ev.data));
-            onEvent(parsed);
-        } catch (e) {
-            console.warn("Unknown event payload:", ev.data, e);
+            raw = JSON.parse(ev.data);
+        } catch {
+            console.warn("Bad JSON from SSE:", ev.data);
+            return;
+        }
+
+        const parsed = DrawEventSchema.safeParse(raw);
+        if (parsed.success) {
+            onEvent(parsed.data);
+        } else {
+            console.warn("Unknown event payload:", raw, parsed.error);
+            // опционально: можно пробрасывать как есть
+            // onEvent(raw as any);
         }
     };
 
-    es.onerror = () => {
-        // простая автореконнект логика
-        if (es.readyState === EventSource.CLOSED) {
-            setTimeout(() => subscribeDrawSSE(drawId, onEvent), 1500);
-        }
+    es.onerror = (e) => {
+        console.error("SSE error", e);
     };
 
     return () => es.close();

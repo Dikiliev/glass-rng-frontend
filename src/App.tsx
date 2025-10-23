@@ -1,7 +1,7 @@
 import { AppBar, Toolbar, Typography, Container } from "@mui/material";
 import { Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/Home";
-import {LiveDraw} from "./pages/LiveDraw";
+import LiveDraw from "./pages/LiveDraw/LiveDraw.tsx";
 
 export default function App() {
     return (
