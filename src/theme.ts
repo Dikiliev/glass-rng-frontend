@@ -109,7 +109,7 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
         palette: {
             mode,
             primary:   { main: mode === "light" ? "#111111" : "#EDEEF0" },
-            secondary: { main: brand.purple },
+            secondary: { main: mode === "light" ? "#48335a" : "#8f66b3" },
             success:   { main: brand.green },
             warning:   { main: brand.orange },
             error:     { main: brand.red },
