@@ -1,27 +1,27 @@
-import { AppBar, Toolbar, Typography, Container } from "@mui/material";
-import { Routes, Route, Link } from "react-router-dom";
+// src/App.tsx
+import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
-import LiveDraw from "./pages/LiveDraw/LiveDraw.tsx";
+import LiveDraw from "./pages/LiveDraw/LiveDraw";
+import AppHeader from "./components/AppHeader";
+import HistoryList from "./pages/History/HistoryList";
+import HistoryItemPage from "./pages/History/HistoryItem";
 
 export default function App() {
     return (
         <>
-            <AppBar position="sticky" color="inherit" elevation={1}>
-                <Toolbar>
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                        Glass RNG — Solana Live
-                    </Typography>
-                    <Typography variant="body2" component={Link} to="/" style={{ textDecoration: 'none' }}>
-                        Home
-                    </Typography>
-                </Toolbar>
-            </AppBar>
-            <Container sx={{ py: 4 }}>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/draw/:drawId" element={<LiveDraw />} />
-                </Routes>
-            </Container>
+            <AppHeader />
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/draw/:drawId" element={<LiveDraw />} />
+
+                <Route path="/history" element={<HistoryList />} />
+                <Route path="/history/:drawId" element={<HistoryItemPage />} />
+
+                {/* заглушки под будущие страницы */}
+                <Route path="/audit" element={<Home />} />
+                <Route path="/about" element={<Home />} />
+
+            </Routes>
         </>
     );
 }

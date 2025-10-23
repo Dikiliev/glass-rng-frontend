@@ -1,245 +1,238 @@
-// src/theme.ts
-import { createTheme, alpha, type ThemeOptions } from "@mui/material/styles";
+// Apple-like light theme for MUI v7
+import { createTheme, alpha, responsiveFontSizes } from "@mui/material/styles";
 
-// --- Базовые цвета бренда (стекло + неон) ---
+const FONT_SANS = [
+    '-apple-system',
+    'BlinkMacSystemFont',
+    '"SF Pro Text"',
+    '"SF Pro Display"',
+    '"Segoe UI"',
+    'Roboto',
+    '"Helvetica Neue"',
+    'Arial',
+    'system-ui',
+    '"Apple Color Emoji"',
+    '"Segoe UI Emoji"',
+    '"Segoe UI Symbol"',
+].join(', ');
+
+const FONT_MONO = [
+    '"SFMono-Regular"',
+    'Menlo',
+    'Monaco',
+    'Consolas',
+    '"Liberation Mono"',
+    '"Courier New"',
+    'monospace',
+].join(', ');
+
+// iOS / macOS accent & feedback colors
 const brand = {
-    primary: "#22D3EE",   // cyan-400 (акцент / действия)
-    secondary: "#A78BFA", // violet-400 (вторичный акцент)
-    success: "#10B981",   // emerald
-    warning: "#F59E0B",   // amber
-    error:   "#EF4444",   // red
-    info:    "#60A5FA",   // blue-400
+    blue:    "#0A84FF", // iOS accent
+    green:   "#34C759",
+    orange:  "#FF9F0A",
+    red:     "#FF3B30",
+    purple:  "#5856D6",
+    grayBg:  "#F5F5F7", // system grouped bg
+    grayDiv: "#E5E5EA", // separator
+    textPri: "#111111",
+    textSec: "#6e6e73",
 };
 
-const fontSans =
-    '"Inter var", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
-const fontMono =
-    '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
-
-// --- Генератор темы: light/dark ---
-export function getTheme(mode: "light" | "dark" = "dark") {
-    const isDark = mode === "dark";
-
-    const backgroundGradient = isDark
-        ? "radial-gradient(1200px 600px at 80% -10%, rgba(34,211,238,0.12), transparent 40%), radial-gradient(900px 500px at 20% 120%, rgba(167,139,250,0.12), transparent 40%), #0B0F14"
-        : "radial-gradient(1200px 600px at 80% -10%, rgba(34,211,238,0.18), transparent 40%), radial-gradient(900px 500px at 20% 120%, rgba(167,139,250,0.18), transparent 40%), #F7FAFC";
-
-    const commonGlass = {
-        surface: isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.7)",
-        border: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
-        hover:  isDark ? "rgba(255,255,255,0.1)"  : "rgba(255,255,255,0.85)",
-        codeBg: isDark ? "rgba(15,23,42,0.7)"     : "rgba(15,23,42,0.06)",
-    };
-
-    const options: ThemeOptions = {
-        palette: {
-            mode,
-            primary:   { main: brand.primary },
-            secondary: { main: brand.secondary },
-            success:   { main: brand.success },
-            warning:   { main: brand.warning },
-            error:     { main: brand.error },
-            info:      { main: brand.info },
-            background: {
-                default: isDark ? "#0B0F14" : "#FFFFFF",
-                paper:   isDark ? "#0D131A" : "#FFFFFF",
+const base = createTheme({
+    palette: {
+        mode: "light",
+        primary:   { main: "#111111" },
+        secondary: { main: brand.purple },
+        success:   { main: brand.green },
+        warning:   { main: brand.orange },
+        error:     { main: brand.red },
+        info:      { main: "#64D2FF" },
+        background: {
+            default: brand.grayBg,
+            paper:   "#FFFFFF",
+        },
+        divider: brand.grayDiv,
+        text: {
+            primary:   brand.textPri,
+            secondary: brand.textSec,
+        },
+    },
+    shape: { borderRadius: 12 },
+    typography: {
+        fontFamily: FONT_SANS,
+        fontWeightRegular: 400,
+        fontWeightMedium: 600,
+        fontWeightBold: 700,
+        h1: { fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 700, letterSpacing: -0.2 },
+        h2: { fontSize: "clamp(24px, 3vw, 32px)", fontWeight: 700, letterSpacing: -0.15 },
+        h3: { fontSize: 24, fontWeight: 700 },
+        h4: { fontSize: 20, fontWeight: 700 },
+        h5: { fontSize: 18, fontWeight: 700 },
+        h6: { fontSize: 16, fontWeight: 700 },
+        subtitle1: { fontSize: 14, fontWeight: 600, color: brand.textSec },
+        body1: { fontSize: 15, lineHeight: 1.55 },
+        body2: { fontSize: 14, lineHeight: 1.5, color: brand.textSec },
+        button: { textTransform: "none", fontWeight: 700, letterSpacing: 0.2 },
+        overline: { textTransform: "none", fontSize: 12, letterSpacing: 0.2, color: brand.textSec },
+    },
+    components: {
+        MuiCssBaseline: {
+            styleOverrides: {
+                html: { height: "100%" },
+                body: {
+                    minHeight: "100%",
+                    backgroundColor: brand.grayBg,
+                    WebkitFontSmoothing: "antialiased",
+                    MozOsxFontSmoothing: "grayscale",
+                },
+                a: { color: brand.blue, textDecorationThickness: "1px", textUnderlineOffset: "3px" },
+                "::selection": { background: alpha(brand.blue, 0.18) },
+                code: {
+                    fontFamily: FONT_MONO,
+                    background: "#F2F2F7",
+                    borderRadius: 8,
+                    padding: "0.12rem 0.35rem",
+                },
+                pre: {
+                    fontFamily: FONT_MONO,
+                    background: "#F2F2F7",
+                    border: `1px solid ${brand.grayDiv}`,
+                    borderRadius: 12,
+                    padding: "12px 14px",
+                    overflow: "auto",
+                },
+                "*::-webkit-scrollbar": { height: 8, width: 10 },
+                "*::-webkit-scrollbar-thumb": {
+                    background: alpha("#9BA0A6", 0.45),
+                    borderRadius: 999,
+                },
             },
-            divider: isDark ? alpha("#FFFFFF", 0.12) : alpha("#000000", 0.12),
-            text: {
-                primary:  isDark ? alpha("#FFFFFF", 0.92) : alpha("#0B1220", 0.92),
-                secondary:isDark ? alpha("#FFFFFF", 0.65) : alpha("#0B1220", 0.65),
+        },
+
+        // Cards / Paper — плоско, с лёгкой тенью и тонкой рамкой
+        MuiPaper: {
+            defaultProps: { elevation: 0, variant: "outlined" },
+            styleOverrides: {
+                root: { backgroundImage: "none" },
+                outlined: {
+                    border: `1px solid ${brand.grayDiv}`,
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                },
             },
         },
-        shape: {
-            borderRadius: 16,
+        MuiCard: {
+            styleOverrides: {
+                root: {
+                    border: `1px solid ${brand.grayDiv}`,
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                },
+            },
         },
-        typography: {
-            fontFamily: fontSans,
-            fontWeightRegular: 500,
-            fontWeightMedium: 600,
-            fontWeightBold: 700,
-            h1: { fontSize: "clamp(32px, 4vw, 44px)", fontWeight: 700, letterSpacing: -0.5 },
-            h2: { fontSize: "clamp(26px, 3vw, 36px)", fontWeight: 700, letterSpacing: -0.3 },
-            h3: { fontSize: "clamp(22px, 2.6vw, 28px)", fontWeight: 700 },
-            h4: { fontSize: "22px", fontWeight: 700 },
-            h5: { fontSize: "18px", fontWeight: 700 },
-            h6: { fontSize: "16px", fontWeight: 700, letterSpacing: 0.1 },
-            subtitle1: { fontWeight: 600, letterSpacing: 0.2 },
-            button: { textTransform: "none", fontWeight: 700, letterSpacing: 0.2 },
-            code: { fontFamily: fontMono } as any,
+
+        // Buttons — акцентные, без лишнего блеска
+        MuiButton: {
+            defaultProps: { disableElevation: true },
+            styleOverrides: {
+                root: { borderRadius: 12, paddingInline: 14 },
+            },
         },
-        shadows: [
-            "none",
-            "0 1px 2px rgba(0,0,0,0.2)",
-            "0 4px 12px rgba(0,0,0,0.25)",
-            "0 10px 30px rgba(0,0,0,0.35)",
-            ...Array(21).fill("0 10px 30px rgba(0,0,0,0.35)"),
-        ] as any,
-        components: {
-            MuiCssBaseline: {
-                styleOverrides: {
-                    ":root": {
-                        "--glass-surface": commonGlass.surface,
-                        "--glass-border":  commonGlass.border,
-                        "--glass-hover":   commonGlass.hover,
-                        "--code-bg":       commonGlass.codeBg,
-                    },
-                    html: { height: "100%" },
-                    body: {
-                        minHeight: "100%",
-                        background: backgroundGradient,
-                        backgroundAttachment: "fixed",
-                    },
-                    "*": { outlineColor: brand.primary },
-                    // аккуратные скроллбары
-                    "*::-webkit-scrollbar": { height: 8, width: 10 },
-                    "*::-webkit-scrollbar-thumb": {
-                        background: alpha("#93C5FD", isDark ? 0.28 : 0.4),
-                        borderRadius: 999,
-                    },
-                    code: {
-                        fontFamily: fontMono,
-                        background: "var(--code-bg)",
-                        borderRadius: 8,
-                        padding: "0.15rem 0.35rem",
-                    },
-                    pre: {
-                        fontFamily: fontMono,
-                        background: "var(--code-bg)",
-                        border: `1px solid ${commonGlass.border}`,
+
+        // Inputs — мягкие, округлые, с «focus ring»
+        MuiTextField: { defaultProps: { variant: "outlined", size: "small" } },
+        MuiOutlinedInput: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: "#FFFFFF",
+                    "& fieldset": { borderColor: brand.grayDiv },
+                    "&:hover fieldset": { borderColor: alpha(brand.blue, 0.6) },
+                    "&.Mui-focused fieldset": { borderColor: brand.blue },
+                    "&.Mui-focused": {
+                        boxShadow: `0 0 0 3px ${alpha(brand.blue, 0.15)}`,
                         borderRadius: 12,
-                        padding: "12px 14px",
-                    },
-                    "::selection": {
-                        background: alpha(brand.primary, 0.3),
                     },
                 },
+                input: { paddingBlock: 10 },
             },
+        },
 
-            // Бумага/Карточки — стеклянные поверхности
-            MuiPaper: {
-                styleOverrides: {
-                    root: {
-                        backgroundImage: "none",
-                    },
-                    outlined: {
-                        backgroundColor: "var(--glass-surface)",
-                        border: `1px solid var(--glass-border)`,
-                        backdropFilter: "saturate(150%) blur(10px)",
-                    },
-                    elevation1: {
-                        backgroundColor: "var(--glass-surface)",
-                        backdropFilter: "saturate(150%) blur(10px)",
-                    },
+        // Chips — мягкие пилюли
+        MuiChip: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 999,
+                    backgroundColor: "#F2F2F7",
+                    border: `1px solid ${brand.grayDiv}`,
                 },
-                defaultProps: { elevation: 0, variant: "outlined" },
-            },
-            MuiCard: {
-                styleOverrides: {
-                    root: {
-                        border: `1px solid var(--glass-border)`,
-                        backgroundColor: "var(--glass-surface)",
-                        backdropFilter: "saturate(150%) blur(10px)",
-                    },
+                colorPrimary: {
+                    backgroundColor: alpha(brand.blue, 0.12),
+                    color: "#0B3A7E",
+                    borderColor: alpha(brand.blue, 0.24),
                 },
-            },
-
-            MuiButton: {
-                styleOverrides: {
-                    root: { borderRadius: 12, paddingInline: 14, letterSpacing: 0.2 },
-                    containedPrimary: {
-                        boxShadow: "0 8px 24px rgba(34,211,238,0.25)",
-                    },
-                    outlined: {
-                        borderColor: alpha(brand.primary, 0.4),
-                        "&:hover": { borderColor: brand.primary, backgroundColor: alpha(brand.primary, 0.06) },
-                    },
-                },
-                defaultProps: { disableElevation: true },
-            },
-
-            MuiChip: {
-                styleOverrides: {
-                    root: {
-                        borderRadius: 999,
-                        backdropFilter: "saturate(180%) blur(8px)",
-                        border: `1px solid var(--glass-border)`,
-                    },
-                    colorDefault: {
-                        backgroundColor: alpha("#FFFFFF", isDark ? 0.06 : 0.5),
-                    },
-                    filled: {
-                        backgroundColor: alpha(brand.primary, isDark ? 0.18 : 0.22),
-                        color: isDark ? "#E6FBFF" : "#04222A",
-                    },
-                },
-            },
-
-            MuiAlert: {
-                styleOverrides: {
-                    root: {
-                        borderRadius: 14,
-                        border: `1px solid var(--glass-border)`,
-                        backgroundColor: "var(--glass-surface)",
-                        backdropFilter: "saturate(150%) blur(8px)",
-                    },
-                },
-            },
-
-            MuiTooltip: {
-                styleOverrides: {
-                    tooltip: {
-                        borderRadius: 10,
-                        background: isDark ? "rgba(15,23,42,0.9)" : "#111827",
-                        color: "#F8FAFC",
-                        border: `1px solid ${alpha("#FFFFFF", 0.12)}`,
-                    },
-                },
-            },
-
-            MuiListItemText: {
-                styleOverrides: {
-                    root: { margin: 0 },
-                    secondary: { opacity: 0.8, fontFamily: fontMono, fontSize: 12 },
-                },
-            },
-
-            MuiDivider: {
-                styleOverrides: {
-                    root: {
-                        borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
-                    },
-                },
-            },
-
-            MuiLink: {
-                styleOverrides: {
-                    root: {
-                        color: brand.info,
-                        textUnderlineOffset: "3px",
-                        "&:hover": { color: alpha(brand.info, 0.85) },
-                    },
-                },
-            },
-
-            MuiLinearProgress: {
-                styleOverrides: {
-                    root: {
-                        height: 8,
-                        borderRadius: 999,
-                        backgroundColor: alpha("#FFFFFF", isDark ? 0.08 : 0.2),
-                    },
-                    bar: {
-                        borderRadius: 999,
-                    },
+                colorSuccess: {
+                    backgroundColor: alpha(brand.green, 0.12),
+                    color: "#0B4D2A",
+                    borderColor: alpha(brand.green, 0.24),
                 },
             },
         },
-    };
 
-    return createTheme(options);
-}
+        // Tooltips — компактные, тёмные
+        MuiTooltip: {
+            styleOverrides: {
+                tooltip: {
+                    borderRadius: 10,
+                    background: "rgba(17,17,17,0.92)",
+                    color: "#F8FAFC",
+                    border: `1px solid ${alpha("#000", 0.1)}`,
+                },
+            },
+        },
 
-// Экспорт готовой тёмной темы по умолчанию
-const theme = getTheme("dark");
+        // Dividers и Lists — тонко и аккуратно
+        MuiDivider: {
+            styleOverrides: { root: { borderColor: brand.grayDiv } },
+        },
+        MuiListItemText: {
+            styleOverrides: {
+                root: { margin: 0 },
+                primary: { fontWeight: 600 },
+                secondary: { color: brand.textSec },
+            },
+        },
+
+        // Progress — тонкая полоска
+        MuiLinearProgress: {
+            styleOverrides: {
+                root: { height: 6, borderRadius: 999, backgroundColor: "#EDEEF0" },
+                bar: { borderRadius: 999 },
+            },
+        },
+
+        // Links
+        MuiLink: {
+            styleOverrides: {
+                root: {
+                    color: brand.blue,
+                    textUnderlineOffset: "3px",
+                    "&:hover": { color: "#0077EE" },
+                },
+            },
+        },
+
+        // Alerts / Snackbar — мягкие карточки
+        MuiAlert: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 12,
+                    border: `1px solid ${brand.grayDiv}`,
+                    backgroundColor: "#FFFFFF",
+                },
+            },
+        },
+    },
+});
+
+// чуть-чуть адаптивной типографики
+const theme = responsiveFontSizes(base, { factor: 2/3 });
 export default theme;

@@ -3,11 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
-
-const theme = createTheme({
-    palette: { mode: 'light' },
-    shape: { borderRadius: 12 },
-})
+import theme from "./theme";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
