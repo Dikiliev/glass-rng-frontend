@@ -18,10 +18,9 @@ export default function AppHeader() {
 
     const NavLinks = (
         <Stack direction="row" spacing={1}>
-            <Button component={RouterLink} to="/" color="inherit">Home</Button>
+            <Button component={RouterLink} to="/" color="inherit">Главная</Button>
+            <Button component={RouterLink} to="/history" color="inherit">Истории</Button>
             <Button onClick={startDemo} variant="contained">Start demo</Button>
-            <Button component={RouterLink} to="/audit" color="inherit">Audit</Button>
-            <Button component={RouterLink} to="/about" color="inherit">About</Button>
         </Stack>
     );
 
