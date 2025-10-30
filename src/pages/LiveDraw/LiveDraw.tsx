@@ -34,7 +34,7 @@ import { StatusBar } from "./components/StatusBar";
 import { BlocksPanel } from "./components/BlocksPanel";
 import { ResultPanel } from "./components/ResultPanel";
 import { TracePanel } from "./components/TracePanel";
-import { InterpretationPanel } from "./components/InterpretationPanel";
+// import { InterpretationPanel } from "./components/InterpretationPanel";
 import { ServerEntropyPanel } from "./components/ServerEntropyPanel";
 import { ComparePanel } from "./components/ComparePanel";
 import { LiveLog } from "./components/LiveLog";
@@ -44,8 +44,9 @@ import { MultiSamplePanel } from "./components/MultiSamplePanel";
 
 type Status = "waiting" | "committed" | "finalized" | "mixing" | "done";
 
-export default function LiveDraw() {
-    const { drawId = "" } = useParams();
+export default function LiveDraw({ drawIdOverride }: { drawIdOverride?: string } = {}) {
+    const { drawId: drawIdParam = "" } = useParams();
+    const drawId = drawIdOverride ?? drawIdParam;
     const qs = new URLSearchParams(useLocation().search);
     const mode = qs.get("mode"); // "solana-blocks"
     const blocksCount = parseInt(qs.get("blocks") || "3", 10);
@@ -178,7 +179,7 @@ export default function LiveDraw() {
                         {/* Stepper (яблочный минимал) */}
                         <Box sx={{ mt: 2 }}>
                             <Stepper activeStep={activeIndex} alternativeLabel>
-                                {steps.map((s, idx) => (
+                                {steps.map((s) => (
                                     <Step key={s.key} completed={s.state === "done"}>
                                         <StepLabel
                                             icon={

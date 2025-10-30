@@ -12,11 +12,9 @@ import {
     Divider,
     IconButton,
     InputAdornment,
-    LinearProgress,
     List,
     ListItem,
     ListItemText,
-    Skeleton,
     Stack,
     Switch,
     TextField,
@@ -28,18 +26,13 @@ import {
 import Grid from "@mui/material/Grid";
 import { useNavigate } from "react-router-dom";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import ScienceRoundedIcon from "@mui/icons-material/ScienceRounded";
-import ShuffleRoundedIcon from "@mui/icons-material/ShuffleRounded";
 import ShieldRoundedIcon from "@mui/icons-material/ShieldRounded";
-
-type HistoryItem = {
-    drawId: string;
-    createdAt?: string;
-    number?: number;
-    result?: { number?: number; seedHex?: string };
-};
+import LiveDraw from "./LiveDraw/LiveDraw";
+import { subscribeCurrentSSE } from "../lib/stream";
+ 
+ 
 
 export default function Home() {
     const nav = useNavigate();
@@ -47,7 +40,7 @@ export default function Home() {
     // Quick start
     const [drawId, setDrawId] = useState(`draw-${Date.now()}`);
     const [blocks, setBlocks] = useState<number>(3);
-    const [loading, setLoading] = useState(false);
+    const [currentId, setCurrentId] = useState<string | null>(null);
 
     // Advanced
     const [advOpen, setAdvOpen] = useState(false);
@@ -55,54 +48,23 @@ export default function Home() {
     const [requireLoc, setRequireLoc] = useState<boolean>(false);
     const [minLocBytes, setMinLocBytes] = useState<number>(512);
 
-    // History
-    const [history, setHistory] = useState<HistoryItem[] | null>(null);
-    const [histLoading, setHistLoading] = useState<boolean>(true);
-
-    useEffect(() => {
-        let cancelled = false;
-        (async () => {
-            try {
-                setHistLoading(true);
-                const resp = await fetch("/history");
-                const data = await resp.json();
-                if (!cancelled) {
-                    const list: HistoryItem[] = Array.isArray(data) ? data : data?.items ?? [];
-                    setHistory(list.slice(0, 8));
-                }
-            } catch {
-                if (!cancelled) setHistory([]);
-            } finally {
-                if (!cancelled) setHistLoading(false);
-            }
-        })();
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    const canStart =
-        drawId.trim().length > 0 &&
-        Number.isFinite(blocks) &&
-        blocks >= 1 &&
-        blocks <= 12 &&
-        Number.isFinite(collectMs) &&
-        collectMs >= 0 &&
-        (!requireLoc || minLocBytes >= 1);
-
-    const onStart = () => {
-        setLoading(true);
-        const params = new URLSearchParams();
-        params.set("mode", "solana-blocks");
-        params.set("blocks", String(blocks));
-        if (collectMs !== 1200) params.set("collect_ms", String(collectMs));
-        if (requireLoc) params.set("require_loc", "true");
-        if (requireLoc && minLocBytes > 0) params.set("min_loc_bytes", String(minLocBytes));
-        nav(`/draw/${encodeURIComponent(drawId)}?${params.toString()}`);
-        setLoading(false);
-    };
+    // History на главной не используется (страница Истории отдельная)
 
     const presetBlocks = [1, 3, 5, 10, 12];
+
+    // Подписываемся на глобальный SSE-канал текущего drawId (без опроса)
+    useEffect(() => {
+        const unsub = subscribeCurrentSSE((msg) => {
+            // игнорируем служебные события (connected/ping); берём только type==='current'
+            if (msg?.drawId) setCurrentId(msg.drawId);
+        });
+        return () => unsub();
+    }, []);
+
+    // Если есть текущий drawId — показываем LiveDraw прямо на главной
+    if (currentId) {
+        return <LiveDraw key={currentId} drawIdOverride={currentId} />;
+    }
 
     return (
         <Container sx={{ my: { xs: 4, md: 6 }, pb: 4 }}>
@@ -134,15 +96,7 @@ export default function Home() {
                     </Typography>
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems="center">
-                        <Button
-                            size="large"
-                            variant="contained"
-                            startIcon={<PlayArrowRoundedIcon />}
-                            onClick={onStart}
-                            disabled={!canStart || loading}
-                        >
-                            {loading ? "Запуск…" : "Start & Watch"}
-                        </Button>
+                        <Chip color="success" label={`Автогенерация на сервере каждые 10 секунд`} />
                         <Button
                             size="large"
                             variant="outlined"
