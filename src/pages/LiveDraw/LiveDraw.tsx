@@ -40,7 +40,6 @@ import { ComparePanel } from "./components/ComparePanel";
 import { LiveLog } from "./components/LiveLog";
 import { QualityPanel } from "./components/QualityPanel";
 import {RangePanel} from "./components/RangePanel.tsx";
-import { MultiSamplePanel } from "./components/MultiSamplePanel";
 
 type Status = "waiting" | "committed" | "finalized" | "mixing" | "done";
 
@@ -232,9 +231,8 @@ export default function LiveDraw({ drawIdOverride }: { drawIdOverride?: string }
                         {seedHex && (
                             <RangePanel seedHex={seedHex} drawId={drawId} />
                         )}
-                        {seedHex && <MultiSamplePanel seedHex={seedHex} drawId={drawId} />}
                         <Box sx={{ my: 1}}/>
-                        {seedHex && <QualityPanel seedHex={seedHex} />}
+                        {/* {seedHex && <QualityPanel seedHex={seedHex} />} */}
                     </CardContent>
                 </Card>
 
