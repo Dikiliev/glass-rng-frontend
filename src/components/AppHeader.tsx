@@ -25,11 +25,38 @@ export default function AppHeader() {
     );
 
     return (
-        <AppBar position="sticky" color="transparent" elevation={0} sx={{ backdropFilter: "saturate(180%) blur(8px)", borderBottom: theme => `1px solid ${theme.palette.divider}` }}>
+        <AppBar 
+            position="sticky" 
+            color="transparent" 
+            elevation={0} 
+            sx={{ 
+                backdropFilter: "blur(20px) saturate(180%)",
+                backgroundColor: "rgba(10, 14, 39, 0.7)",
+                borderBottom: theme => `1px solid ${theme.palette.divider}`,
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+            }}
+        >
             <Container maxWidth="lg">
                 <Toolbar disableGutters sx={{ minHeight: 68 }}>
                     {/* Brand */}
-                    <Box component={RouterLink} to="/" sx={{ textDecoration: "none", color: "text.primary", fontWeight: 700, fontSize: 18, letterSpacing: 0.2 }}>
+                    <Box 
+                        component={RouterLink} 
+                        to="/" 
+                        sx={{ 
+                            textDecoration: "none", 
+                            background: "linear-gradient(135deg, #9945FF 0%, #FF6B9D 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            fontWeight: 700, 
+                            fontSize: 20, 
+                            letterSpacing: 0.5,
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                                filter: "drop-shadow(0 0 8px rgba(153, 69, 255, 0.6))",
+                                transform: "scale(1.05)",
+                            },
+                        }}
+                    >
                         Glass RNG
                     </Box>
 

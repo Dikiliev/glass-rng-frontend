@@ -1,60 +1,57 @@
-import { Box, IconButton, Link, List, ListItem, Grid, ListItemText, Tooltip, Typography } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { Copy, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { SolanaBlock } from "../../../lib/types";
 
 type Props = {
-    blocks: SolanaBlock[];
-    beaconHex: string | null;
+  blocks: SolanaBlock[];
+  beaconHex: string | null;
 };
 
 export function BlocksPanel({ blocks, beaconHex }: Props) {
-    const copy = (t: string) => navigator.clipboard.writeText(t);
+  const copy = (t: string) => navigator.clipboard.writeText(t);
 
-    return (
-        <>
-            <Typography variant="subtitle1" gutterBottom>
-                1) Источник: финализированные блоки Solana
-            </Typography>
+  return (
+    <>
+      <div className="text-sm font-medium text-muted-foreground mb-2">
+        1) Источник: финализированные блоки Solana
+      </div>
 
-            {blocks.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                    Ждём финализированные блоки…
-                </Typography>
-            ) : (
-                <List dense>
-                    {blocks.map(b => (
-                        <ListItem
-                            key={b.slot}
-                            secondaryAction={
-                                <Link href={b.explorerUrl} target="_blank" rel="noreferrer">
-                                    Solscan
-                                </Link>
-                            }
-                        >
-                            <ListItemText
-                                primary={`slot #${b.slot}`}
-                                secondary={<code style={{ fontSize: 12 }}>{b.blockhash}</code>}
-                            />
-                        </ListItem>
-                    ))}
-                </List>
-            )}
+      {blocks.length === 0 ? (
+        <div className="text-sm text-muted-foreground">Ждём финализированные блоки…</div>
+      ) : (
+        <div className="space-y-2 mb-4">
+          {blocks.map((b) => (
+            <div
+              key={b.slot}
+              className="flex items-center justify-between p-3 bg-card border border-border rounded-lg"
+            >
+              <div className="flex-1">
+                <div className="text-sm font-medium text-foreground">slot #{b.slot}</div>
+                <code className="text-xs font-mono text-muted-foreground break-all">{b.blockhash}</code>
+              </div>
+              <Button variant="ghost" size="sm" asChild>
+                <a href={b.explorerUrl} target="_blank" rel="noreferrer">
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
 
-            {beaconHex && (
-                <Box mt={2}>
-                    <Typography variant="subtitle1" gutterBottom>
-                        2) Beacon (конкатенация base58→bytes хэшей блоков)
-                    </Typography>
-                    <Box sx={{ fontFamily: "monospace", fontSize: 12, wordBreak: "break-all" }}>{beaconHex}</Box>
-                    <Box sx={{ mt: 1 }}>
-                        <Tooltip title="Скопировать beacon">
-                            <IconButton size="small" onClick={() => copy(beaconHex)}>
-                                <ContentCopyIcon fontSize="small" />
-                            </IconButton>
-                        </Tooltip>
-                    </Box>
-                </Box>
-            )}
-        </>
-    );
+      {beaconHex && (
+        <div className="mt-4">
+          <div className="text-sm font-medium text-muted-foreground mb-2">
+            2) Beacon (конкатенация base58→bytes хэшей блоков)
+          </div>
+          <div className="flex items-center gap-2 p-3 bg-card border border-border rounded-lg">
+            <code className="text-xs font-mono text-foreground break-all flex-1">{beaconHex}</code>
+            <Button variant="ghost" size="sm" onClick={() => copy(beaconHex)}>
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }

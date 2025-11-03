@@ -1,102 +1,111 @@
-// theme.ts — Apple-like design for MUI v7
-// Senior-crafted: чистые отступы, продуманная типографика, мягкие тени, focus ring, единые токены.
+// theme.ts — Solana Visual Spark design for MUI v7
+// Темная тема с фиолетово-синими градиентами, эффектами свечения и неоновыми акцентами
 
 import { createTheme, alpha, responsiveFontSizes } from "@mui/material/styles";
 
-// ---------- Fonts ----------
+// ---------- Fonts (Modern Tech Style) ----------
 const FONT_SANS = [
-    '-apple-system',
-    'BlinkMacSystemFont',
-    '"SF Pro Text"',
+    '"Inter"',
     '"SF Pro Display"',
     '"Segoe UI"',
-    'Roboto',
-    '"Helvetica Neue"',
-    'Arial',
+    '"Roboto"',
     'system-ui',
-    '"Apple Color Emoji"',
-    '"Segoe UI Emoji"',
-    '"Segoe UI Symbol"',
+    '-apple-system',
+    'BlinkMacSystemFont',
+    'sans-serif',
 ].join(', ');
 
 const FONT_MONO = [
-    '"SFMono-Regular"',
+    '"SF Mono"',
+    '"JetBrains Mono"',
+    '"Fira Code"',
     'Menlo',
     'Monaco',
     'Consolas',
-    '"Liberation Mono"',
-    '"Courier New"',
     'monospace',
 ].join(', ');
 
-// ---------- Design Tokens ----------
+// ---------- Design Tokens (Solana Visual Spark Style) ----------
 const tokens = {
-    radius: 12,
-    radiusLg: 16,
-    ring: (hex: string) => `0 0 0 3px ${alpha(hex, 0.16)}`,
-    // iOS/macOS-подобные цвета
+    radius: 16,
+    radiusLg: 20,
+    ring: (hex: string) => `0 0 0 3px ${alpha(hex, 0.3)}, 0 0 20px ${alpha(hex, 0.2)}`,
+    // Solana цвета: фиолетовый, розовый, синий, циан
     brand: {
-        blue:   "#0A84FF",
-        green:  "#34C759",
-        orange: "#FF9F0A",
-        red:    "#FF3B30",
-        purple: "#5856D6",
+        purple: "#9945FF",    // Solana purple
+        pink:   "#FF6B9D",    // Solana pink accent
+        blue:   "#14F195",    // Solana green/cyan
+        cyan:   "#00D4FF",    // Bright cyan
+        violet: "#C77DFF",    // Light purple
+        green:  "#14F195",    // Solana green
+        orange: "#FFB84D",
+        red:    "#FF6B6B",
+        yellow: "#FFD93D",
     },
     light: {
-        bg:        "#F5F5F7",
-        paper:     "#FFFFFF",
-        divider:   "#E5E5EA",
-        textPri:   "#111111",
-        textSec:   "#6E6E73",
-        codeBg:    "#F2F2F7",
-        scrollbar: "#9BA0A6",
+        bg:        "#0A0E27",      // Deep dark blue
+        paper:     "#141B3A",      // Dark purple-blue
+        divider:   "rgba(153, 69, 255, 0.2)",
+        textPri:   "#FFFFFF",
+        textSec:   "rgba(255, 255, 255, 0.7)",
+        codeBg:    "#1A2342",
+        scrollbar: "rgba(153, 69, 255, 0.3)",
     },
     dark: {
-        bg:        "#0F1113",
-        paper:     "#121416",
-        divider:   "#23262A",
-        textPri:   "#F5F6F7",
-        textSec:   "#A4A8AE",
-        codeBg:    "#1A1D21",
-        scrollbar: "#737A81",
+        bg:        "#0A0E27",      // Deep dark blue background
+        paper:     "#141B3A",      // Dark purple-blue cards
+        divider:   "rgba(153, 69, 255, 0.3)",
+        textPri:   "#FFFFFF",
+        textSec:   "rgba(255, 255, 255, 0.65)",
+        codeBg:    "#1A2342",
+        scrollbar: "rgba(153, 69, 255, 0.4)",
     }
 };
 
-// ---------- Subtle Shadows (персонально настроенные) ----------
-const buildShadows = (mode: "light" | "dark"): string[] => {
-    const base = mode === "light"
-        ? ["rgba(0,0,0,0.06)", "rgba(0,0,0,0.12)"]
-        : ["rgba(0,0,0,0.5)",  "rgba(0,0,0,0.6)"];
-    const s = (y: number, b = 10) => `0 ${y}px ${y + b}px ${alpha(base[0], 1)}`;
-    const s2 = (y: number, b = 10) => `0 ${Math.max(1, y - 1)}px ${y + b}px ${alpha(base[1], 1)}`;
+// ---------- Glow Shadows (Solana spark effects) ----------
+const buildShadows = (): string[] => {
+    const glowPurple = "rgba(153, 69, 255, 0.4)";
+    const glowPink = "rgba(255, 107, 157, 0.3)";
+    const darkBase = "rgba(0, 0, 0, 0.5)";
+    
+    const s = (y: number, blur: number, spread = 0, colors: string[]) => {
+        return colors.map(c => `0 ${y}px ${blur}px ${spread}px ${c}`).join(', ');
+    };
+    
+    const glow = (y: number, blur: number, intensity = 1) => 
+        s(y, blur, 0, [
+            darkBase,
+            alpha(glowPurple, 0.3 * intensity),
+            alpha(glowPink, 0.2 * intensity),
+        ]);
 
-    // 25 слоёв как в MUI, но все — мягкие и короткие
+    // Неоновые тени с эффектом свечения
     return [
         "none",
-        `${s(1, 4)}, ${s2(1, 6)}`,
-        `${s(2, 6)}, ${s2(2, 8)}`,
-        `${s(3, 8)}, ${s2(3,10)}`,
-        `${s(4, 9)}, ${s2(4,12)}`,
-        `${s(5,10)}, ${s2(5,14)}`,
-        `${s(6,11)}, ${s2(6,16)}`,
-        `${s(7,12)}, ${s2(7,18)}`,
-        `${s(8,12)}, ${s2(8,20)}`,
-        `${s(9,13)}, ${s2(9,22)}`,
-        `${s(10,14)}, ${s2(10,24)}`,
-        `${s(11,14)}, ${s2(11,26)}`,
-        `${s(12,15)}, ${s2(12,28)}`,
-        `${s(13,15)}, ${s2(13,30)}`,
-        `${s(14,16)}, ${s2(14,32)}`,
-        `${s(15,16)}, ${s2(15,34)}`,
-        `${s(16,17)}, ${s2(16,36)}`,
-        `${s(17,17)}, ${s2(17,38)}`,
-        `${s(18,18)}, ${s2(18,40)}`,
-        `${s(19,18)}, ${s2(19,42)}`,
-        `${s(20,19)}, ${s2(20,44)}`,
-        `${s(21,19)}, ${s2(21,46)}`,
-        `${s(22,20)}, ${s2(22,48)}`,
-        `${s(23,20)}, ${s2(23,50)}`,
-        `${s(24,21)}, ${s2(24,52)}`,
+        glow(1, 4, 0.5),
+        glow(2, 8, 0.6),
+        glow(4, 12, 0.7),
+        glow(6, 16, 0.8),
+        glow(8, 20, 0.9),
+        glow(10, 24, 1.0),
+        glow(12, 28, 1.1),
+        glow(14, 32, 1.2),
+        glow(16, 36, 1.3),
+        glow(18, 40, 1.4),
+        glow(20, 44, 1.5),
+        glow(22, 48, 1.6),
+        glow(24, 52, 1.7),
+        glow(26, 56, 1.8),
+        glow(28, 60, 1.9),
+        glow(30, 64, 2.0),
+        glow(32, 68, 2.1),
+        glow(34, 72, 2.2),
+        glow(36, 76, 2.3),
+        glow(38, 80, 2.4),
+        glow(40, 84, 2.5),
+        glow(42, 88, 2.6),
+        glow(44, 92, 2.7),
+        glow(46, 96, 2.8),
     ];
 };
 
@@ -107,13 +116,13 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
 
     const base = createTheme({
         palette: {
-            mode,
-            primary:   { main: mode === "light" ? "#111111" : "#EDEEF0" },
-            secondary: { main: mode === "light" ? "#48335a" : "#8f66b3" },
+            mode: "dark", // Всегда темная тема для Solana стиля
+            primary:   { main: brand.purple },
+            secondary: { main: brand.pink },
             success:   { main: brand.green },
             warning:   { main: brand.orange },
             error:     { main: brand.red },
-            info:      { main: mode === "light" ? "#64D2FF" : "#5AC8F5" },
+            info:      { main: brand.cyan },
             background: {
                 default: t.bg,
                 paper:   t.paper,
@@ -124,9 +133,9 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                 secondary: t.textSec,
             },
             action: {
-                hover: alpha(brand.blue, mode === "light" ? 0.06 : 0.08),
-                selected: alpha(brand.blue, mode === "light" ? 0.1 : 0.14),
-                focus: alpha(brand.blue, 0.16),
+                hover: alpha(brand.purple, 0.2),
+                selected: alpha(brand.purple, 0.25),
+                focus: alpha(brand.purple, 0.3),
                 disabled: alpha(t.textPri, 0.32),
                 disabledBackground: alpha(t.textPri, 0.06),
             },
@@ -137,24 +146,24 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
         typography: {
             fontFamily: FONT_SANS,
             fontWeightRegular: 400,
-            fontWeightMedium: 600,
+            fontWeightMedium: 500,
             fontWeightBold: 700,
-            // Apple-like scale (чуть плотнее, клэмпы для адаптива)
-            h1: { fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 700, letterSpacing: -0.2, lineHeight: 1.18 },
-            h2: { fontSize: "clamp(24px, 3.2vw, 32px)", fontWeight: 700, letterSpacing: -0.15, lineHeight: 1.2 },
-            h3: { fontSize: 24, fontWeight: 700, letterSpacing: -0.1, lineHeight: 1.22 },
-            h4: { fontSize: 20, fontWeight: 700, letterSpacing: -0.08, lineHeight: 1.24 },
-            h5: { fontSize: 18, fontWeight: 700, letterSpacing: -0.04, lineHeight: 1.28 },
-            h6: { fontSize: 16, fontWeight: 700, letterSpacing: 0, lineHeight: 1.32 },
-            subtitle1: { fontSize: 14, fontWeight: 600, color: t.textSec, lineHeight: 1.4 },
-            body1: { fontSize: 15, lineHeight: 1.55 },
-            body2: { fontSize: 14, lineHeight: 1.5, color: t.textSec },
-            button: { textTransform: "none", fontWeight: 700, letterSpacing: 0.2 },
-            overline: { textTransform: "none", fontSize: 12, letterSpacing: 0.2, color: t.textSec },
-            caption: { fontSize: 12, color: t.textSec, lineHeight: 1.4 },
+            // Современный tech стиль
+            h1: { fontSize: "clamp(42px, 8vw, 80px)", fontWeight: 700, letterSpacing: -1, lineHeight: 1.1 },
+            h2: { fontSize: "clamp(32px, 6vw, 56px)", fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.15 },
+            h3: { fontSize: 32, fontWeight: 700, letterSpacing: -0.5, lineHeight: 1.2 },
+            h4: { fontSize: 24, fontWeight: 600, letterSpacing: -0.3, lineHeight: 1.25 },
+            h5: { fontSize: 20, fontWeight: 600, letterSpacing: -0.2, lineHeight: 1.3 },
+            h6: { fontSize: 18, fontWeight: 600, letterSpacing: -0.1, lineHeight: 1.35 },
+            subtitle1: { fontSize: 16, fontWeight: 500, color: t.textSec, lineHeight: 1.5 },
+            body1: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
+            body2: { fontSize: 15, lineHeight: 1.55, color: t.textSec, fontWeight: 400 },
+            button: { textTransform: "none", fontWeight: 600, letterSpacing: 0.3, fontSize: "15px" },
+            overline: { textTransform: "none", fontSize: 12, letterSpacing: 1, color: t.textSec, fontWeight: 600 },
+            caption: { fontSize: 13, color: t.textSec, lineHeight: 1.5, fontWeight: 400 },
         },
 
-        shadows: buildShadows(mode),
+        shadows: buildShadows() as any,
 
         transitions: {
             duration: {
@@ -184,20 +193,37 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                         "--radius": `${tokens.radius}px`,
                         "--radius-lg": `${tokens.radiusLg}px`,
                     },
-                    html: { height: "100%" },
+                    html: { 
+                        height: "100%",
+                        background: `linear-gradient(135deg, ${t.bg} 0%, #0F1629 100%)`,
+                    },
                     body: {
                         minHeight: "100%",
                         backgroundColor: t.bg,
+                        backgroundImage: `
+                            radial-gradient(circle at 20% 50%, ${alpha(brand.purple, 0.15)} 0%, transparent 50%),
+                            radial-gradient(circle at 80% 80%, ${alpha(brand.pink, 0.1)} 0%, transparent 50%),
+                            radial-gradient(circle at 40% 20%, ${alpha(brand.cyan, 0.08)} 0%, transparent 50%)
+                        `,
+                        backgroundAttachment: "fixed",
                         WebkitFontSmoothing: "antialiased",
                         MozOsxFontSmoothing: "grayscale",
                         textRendering: "optimizeLegibility",
                     },
                     a: {
-                        color: brand.blue,
+                        color: brand.purple,
                         textDecorationThickness: "1px",
                         textUnderlineOffset: "3px",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                            color: brand.pink,
+                            textShadow: `0 0 10px ${alpha(brand.pink, 0.5)}`,
+                        },
                     },
-                    "::selection": { background: alpha(brand.blue, 0.18) },
+                    "::selection": { 
+                        background: alpha(brand.purple, 0.3),
+                        color: "#FFFFFF",
+                    },
                     code: {
                         fontFamily: FONT_MONO,
                         background: t.codeBg,
@@ -217,10 +243,10 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                         background: alpha(t.scrollbar, 0.45),
                         borderRadius: 999,
                     },
-                    // Subtle focus ring для всех фокусируемых
+                    // Glowing focus ring
                     "*:focus-visible": {
                         outline: "none",
-                        boxShadow: tokens.ring(brand.blue),
+                        boxShadow: tokens.ring(brand.purple),
                         borderRadius: tokens.radius,
                     },
                 },
@@ -230,13 +256,20 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
             MuiPaper: {
                 defaultProps: { elevation: 0, variant: "outlined" },
                 styleOverrides: {
-                    root: { backgroundImage: "none" },
+                    root: { 
+                        backgroundImage: "none",
+                        backdropFilter: "blur(10px)",
+                    },
                     outlined: {
                         border: `1px solid ${t.divider}`,
-                        boxShadow: mode === "light"
-                            ? "0 1px 2px rgba(0,0,0,0.06)"
-                            : "0 1px 2px rgba(0,0,0,0.5)",
+                        boxShadow: buildShadows()[2],
                         borderRadius: tokens.radiusLg,
+                        background: alpha(t.paper, 0.8),
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                            boxShadow: buildShadows()[4],
+                            borderColor: alpha(brand.purple, 0.5),
+                        },
                     },
                 },
             },
@@ -244,10 +277,17 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                 styleOverrides: {
                     root: {
                         border: `1px solid ${t.divider}`,
-                        boxShadow: mode === "light"
-                            ? "0 1px 2px rgba(0,0,0,0.06)"
-                            : "0 1px 2px rgba(0,0,0,0.5)",
+                        boxShadow: buildShadows()[2],
                         borderRadius: tokens.radiusLg,
+                        background: alpha(t.paper, 0.9),
+                        backdropFilter: "blur(10px)",
+                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                        "&:hover": {
+                            transform: "translateY(-4px)",
+                            boxShadow: buildShadows()[6],
+                            borderColor: alpha(brand.purple, 0.6),
+                            background: alpha(t.paper, 0.95),
+                        },
                     },
                 },
             },
@@ -258,26 +298,59 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                 styleOverrides: {
                     root: {
                         borderRadius: tokens.radiusLg,
-                        paddingInline: 14,
-                        fontWeight: 700,
-                        "&:focus-visible": { boxShadow: tokens.ring(brand.blue) },
+                        paddingInline: 20,
+                        paddingBlock: 12,
+                        fontWeight: 600,
+                        textTransform: "none",
+                        fontSize: "15px",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        "&:focus-visible": { boxShadow: tokens.ring(brand.purple) },
                     },
                     containedPrimary: {
-                        backgroundColor: mode === "light" ? "#111111" : "#EDEEF0",
-                        color: mode === "light" ? "#FFFFFF" : "#111111",
+                        background: `linear-gradient(135deg, ${brand.purple} 0%, ${brand.pink} 100%)`,
+                        color: "#FFFFFF",
+                        boxShadow: buildShadows()[3],
+                        position: "relative",
+                        overflow: "hidden",
+                        "&::before": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: "-100%",
+                            width: "100%",
+                            height: "100%",
+                            background: `linear-gradient(90deg, transparent, ${alpha("#FFFFFF", 0.2)}, transparent)`,
+                            transition: "left 0.5s ease",
+                        },
                         "&:hover": {
-                            backgroundColor: mode === "light" ? "#1A1A1A" : "#F2F3F5",
+                            transform: "translateY(-2px)",
+                            boxShadow: buildShadows()[6],
+                            background: `linear-gradient(135deg, ${brand.violet} 0%, ${brand.pink} 100%)`,
+                            "&::before": {
+                                left: "100%",
+                            },
+                        },
+                        "&:active": {
+                            transform: "translateY(0)",
                         },
                     },
                     outlined: {
-                        borderColor: t.divider,
+                        borderWidth: 1.5,
+                        borderColor: brand.purple,
+                        color: brand.purple,
                         "&:hover": {
-                            borderColor: alpha(brand.blue, 0.6),
-                            backgroundColor: alpha(brand.blue, 0.06),
+                            borderColor: brand.pink,
+                            backgroundColor: alpha(brand.purple, 0.15),
+                            transform: "translateY(-1px)",
+                            boxShadow: `0 4px 12px ${alpha(brand.purple, 0.3)}`,
                         },
                     },
                     text: {
-                        "&:hover": { backgroundColor: alpha(brand.blue, 0.06) },
+                        color: brand.purple,
+                        "&:hover": { 
+                            backgroundColor: alpha(brand.purple, 0.15),
+                            color: brand.pink,
+                        },
                     },
                 },
             },
@@ -287,12 +360,16 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
             MuiOutlinedInput: {
                 styleOverrides: {
                     root: {
-                        backgroundColor: t.paper,
+                        backgroundColor: alpha(t.paper, 0.6),
                         borderRadius: tokens.radiusLg,
+                        backdropFilter: "blur(10px)",
                         "& fieldset": { borderColor: t.divider },
-                        "&:hover fieldset": { borderColor: alpha(brand.blue, 0.6) },
-                        "&.Mui-focused fieldset": { borderColor: brand.blue },
-                        "&.Mui-focused": { boxShadow: tokens.ring(brand.blue) },
+                        "&:hover fieldset": { borderColor: alpha(brand.purple, 0.6) },
+                        "&.Mui-focused fieldset": { borderColor: brand.purple },
+                        "&.Mui-focused": { 
+                            boxShadow: tokens.ring(brand.purple),
+                            backgroundColor: alpha(t.paper, 0.8),
+                        },
                     },
                     input: { paddingBlock: 10 },
                     notchedOutline: { borderWidth: 1 },
@@ -300,7 +377,13 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
             },
             MuiInputLabel: {
                 styleOverrides: {
-                    root: { color: t.textSec, "&.Mui-focused": { color: brand.blue } },
+                    root: { 
+                        color: t.textSec, 
+                        "&.Mui-focused": { 
+                            color: brand.purple,
+                            textShadow: `0 0 8px ${alpha(brand.purple, 0.5)}`,
+                        },
+                    },
                 },
             },
             MuiSelect: {
@@ -317,19 +400,33 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
             MuiChip: {
                 styleOverrides: {
                     root: {
-                        borderRadius: 999,
-                        backgroundColor: mode === "light" ? "#F2F2F7" : "#1A1D21",
+                        borderRadius: 16,
+                        height: 32,
+                        fontWeight: 500,
+                        fontSize: "13px",
+                        backgroundColor: alpha(t.paper, 0.5),
                         border: `1px solid ${t.divider}`,
+                        backdropFilter: "blur(10px)",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        "&:hover": {
+                            transform: "translateY(-1px)",
+                            borderColor: brand.purple,
+                            backgroundColor: alpha(brand.purple, 0.2),
+                            boxShadow: `0 2px 8px ${alpha(brand.purple, 0.3)}`,
+                        },
                     },
                     colorPrimary: {
-                        backgroundColor: alpha(brand.blue, 0.12),
-                        color: mode === "light" ? "#0B3A7E" : "#9ED0FF",
-                        borderColor: alpha(brand.blue, 0.24),
+                        backgroundColor: alpha(brand.purple, 0.2),
+                        color: brand.purple,
+                        borderColor: alpha(brand.purple, 0.4),
+                        "&:hover": {
+                            backgroundColor: alpha(brand.purple, 0.3),
+                        },
                     },
                     colorSuccess: {
-                        backgroundColor: alpha(brand.green, 0.12),
-                        color: mode === "light" ? "#0B4D2A" : "#9AE6B4",
-                        borderColor: alpha(brand.green, 0.24),
+                        backgroundColor: alpha(brand.green, 0.2),
+                        color: brand.green,
+                        borderColor: alpha(brand.green, 0.4),
                     },
                 },
             },
@@ -348,6 +445,46 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                 },
             },
 
+            // --------- Accordion ---------
+            MuiAccordion: {
+                styleOverrides: {
+                    root: {
+                        borderRadius: tokens.radiusLg,
+                        border: `2px solid ${t.divider}`,
+                        boxShadow: buildShadows()[1],
+                        background: t.paper,
+                        "&:before": { display: "none" },
+                        "&.Mui-expanded": {
+                            borderRadius: tokens.radiusLg,
+                        },
+                    },
+                },
+            },
+            MuiAccordionSummary: {
+                styleOverrides: {
+                    root: {
+                        borderRadius: tokens.radiusLg,
+                        minHeight: 48,
+                        padding: "0 16px",
+                        "&.Mui-expanded": {
+                            minHeight: 48,
+                            borderRadius: `${tokens.radiusLg}px ${tokens.radiusLg}px 0 0`,
+                        },
+                        "&:hover": {
+                            backgroundColor: alpha(brand.blue, 0.04),
+                        },
+                    },
+                },
+            },
+            MuiAccordionDetails: {
+                styleOverrides: {
+                    root: {
+                        padding: "16px",
+                        borderRadius: `0 0 ${tokens.radiusLg}px ${tokens.radiusLg}px`,
+                    },
+                },
+            },
+
             // --------- Dividers & Lists ---------
             MuiDivider: { styleOverrides: { root: { borderColor: t.divider } } },
             MuiListItemText: {
@@ -361,8 +498,29 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
             // --------- Progress ---------
             MuiLinearProgress: {
                 styleOverrides: {
-                    root: { height: 6, borderRadius: 999, backgroundColor: mode === "light" ? "#EDEEF0" : "#1E2226" },
-                    bar: { borderRadius: 999 },
+                    root: { 
+                        height: 8, 
+                        borderRadius: 999, 
+                        backgroundColor: alpha(t.divider, 0.3),
+                        boxShadow: `inset 0 2px 4px ${alpha("#000", 0.2)}`,
+                    },
+                    bar: { 
+                        borderRadius: 999,
+                        background: `linear-gradient(90deg, ${brand.purple} 0%, ${brand.pink} 50%, ${brand.cyan} 100%)`,
+                        boxShadow: `0 0 15px ${alpha(brand.purple, 0.6)}`,
+                        position: "relative",
+                        overflow: "hidden",
+                        "&::after": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: "-100%",
+                            width: "100%",
+                            height: "100%",
+                            background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)",
+                            animation: "shimmer 2s infinite",
+                        },
+                    },
                 },
             },
             MuiCircularProgress: {
@@ -375,9 +533,13 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
             MuiLink: {
                 styleOverrides: {
                     root: {
-                        color: brand.blue,
+                        color: brand.purple,
                         textUnderlineOffset: "3px",
-                        "&:hover": { color: mode === "light" ? "#0077EE" : "#66C4FF" },
+                        transition: "all 0.2s ease",
+                        "&:hover": { 
+                            color: brand.pink,
+                            textShadow: `0 0 8px ${alpha(brand.pink, 0.5)}`,
+                        },
                     },
                 },
             },
@@ -400,7 +562,7 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                 styleOverrides: {
                     root: {
                         borderRadius: tokens.radiusLg,
-                        boxShadow: buildShadows(mode)[4],
+                        boxShadow: buildShadows()[4],
                     },
                 },
             },
@@ -446,6 +608,36 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
     return responsiveFontSizes(base, { factor: 2 / 3 });
 }
 
-// Светлая тема по умолчанию
-const theme = createAppTheme("light");
+// Темная тема Solana по умолчанию
+const theme = createAppTheme("dark");
+
+// Добавляем глобальные анимации
+const globalStyles = `
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    @keyframes spark {
+        0%, 100% { opacity: 0; transform: scale(0); }
+        50% { opacity: 1; transform: scale(1); }
+    }
+    
+    @keyframes glow-pulse {
+        0%, 100% { 
+            filter: drop-shadow(0 0 20px rgba(153, 69, 255, 0.5));
+        }
+        50% { 
+            filter: drop-shadow(0 0 30px rgba(153, 69, 255, 0.8)) drop-shadow(0 0 40px rgba(255, 107, 157, 0.6));
+        }
+    }
+`;
+
+// Применяем глобальные стили через MUI
+if (typeof document !== 'undefined') {
+    const style = document.createElement('style');
+    style.textContent = globalStyles;
+    document.head.appendChild(style);
+}
+
 export default theme;

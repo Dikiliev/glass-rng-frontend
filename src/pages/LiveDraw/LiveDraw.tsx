@@ -7,7 +7,6 @@ import {
     Card,
     CardContent,
     Divider,
-    Grid,
     Chip,
     IconButton,
     Tooltip,
@@ -17,15 +16,10 @@ import {
     AccordionSummary,
     AccordionDetails,
     Snackbar,
-    Stepper,
-    Step,
-    StepLabel,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { useLocation, useParams } from "react-router-dom";
 import { startSolanaDraw } from "../../lib/api";
 
@@ -34,12 +28,10 @@ import { StatusBar } from "./components/StatusBar";
 import { BlocksPanel } from "./components/BlocksPanel";
 import { ResultPanel } from "./components/ResultPanel";
 import { TracePanel } from "./components/TracePanel";
-// import { InterpretationPanel } from "./components/InterpretationPanel";
 import { ServerEntropyPanel } from "./components/ServerEntropyPanel";
 import { ComparePanel } from "./components/ComparePanel";
 import { LiveLog } from "./components/LiveLog";
-import { QualityPanel } from "./components/QualityPanel";
-import {RangePanel} from "./components/RangePanel.tsx";
+import { RangePanel } from "./components/RangePanel";
 
 type Status = "waiting" | "committed" | "finalized" | "mixing" | "done";
 
@@ -86,10 +78,8 @@ export default function LiveDraw({ drawIdOverride }: { drawIdOverride?: string }
         }
     }, [drawId, mode, blocksCount]);
 
-    // вычисляем этапы и прогресс
+    // вычисляем прогресс
     const {
-        steps,
-        activeIndex,
         percent,
         currentText,
         done: { srcDone, noiseDone, mixDone, resultDone },
@@ -128,174 +118,178 @@ export default function LiveDraw({ drawIdOverride }: { drawIdOverride?: string }
         </Stack>
     );
 
+    const isDone = status === "done" && seedHex;
+    const isLoading = !isDone;
+
     return (
         <Container sx={{ my: 6, pb: 6 }}>
-            <Stack spacing={3}>
-                {/* ───────────── Header (минимум) ───────────── */}
-                <Stack spacing={0.5}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: -0.2 }}>
-                            Draw
-                        </Typography>
-                        <Chip label={statusLabel(status)} size="small" />
-                    </Stack>
-
-                    <Stack
-                        direction={{ xs: "column", sm: "row" }}
-                        spacing={1}
-                        alignItems={{ xs: "flex-start", sm: "center" }}
-                    >
-                        <Stack direction="row" spacing={1} alignItems="center">
-                            <Typography variant="overline" color="text.secondary">
-                                ID:
-                            </Typography>
-                            <Box sx={{ fontSize: 14 }}>{drawId}</Box>
-                            <Tooltip title="Copy draw id">
-                                <IconButton size="small" onClick={() => copy(drawId, "Draw ID")}>
-                                    <ContentCopyIcon fontSize="small" />
-                                </IconButton>
-                            </Tooltip>
-                        </Stack>
-
-                        <Box sx={{ flex: 1 }} />
-
-                        {sourceChips}
-                    </Stack>
+            <Stack spacing={4}>
+                {/* ───────────── Заголовок (компактный) ───────────── */}
+                <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1}>
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                        Генерация случайного числа
+                    </Typography>
+                    <Chip 
+                        label={statusLabel(status)} 
+                        size="small"
+                        color={isDone ? "success" : "default"}
+                    />
                 </Stack>
 
-                {/* ───────────── Главная: Статус + Прогресс + Результат ───────────── */}
-                <Card variant="outlined">
-                    <CardContent>
-                        {/* компактный статус (иконки/подсказки) */}
-                        <StatusBar
-                            status={status}
-                            inputs={inputs}
-                            statusNote={statusNote}
-                            collectOpen={collectOpen}
-                            collectRemainMs={collectRemainMs}
-                        />
-
-                        {/* Stepper (яблочный минимал) */}
-                        <Box sx={{ mt: 2 }}>
-                            <Stepper activeStep={activeIndex} alternativeLabel>
-                                {steps.map((s) => (
-                                    <Step key={s.key} completed={s.state === "done"}>
-                                        <StepLabel
-                                            icon={
-                                                s.state === "done" ? (
-                                                    <CheckCircleIcon color="success" fontSize="small" />
-                                                ) : s.state === "doing" ? (
-                                                    <AutoAwesomeIcon color="primary" fontSize="small" />
-                                                ) : (
-                                                    <HourglassEmptyIcon fontSize="small" />
-                                                )
-                                            }
-                                        >
-                                            <Typography variant="caption" color={s.state === "doing" ? "primary.main" : "text.secondary"}>
-                                                {s.label}
-                                            </Typography>
-                                        </StepLabel>
-                                    </Step>
-                                ))}
-                            </Stepper>
-
-                            <Box sx={{ mt: 1.5 }}>
-                                <LinearProgress variant="determinate" value={percent} />
-                                <Typography variant="caption" color="text.secondary">
-                                    {currentText}
-                                </Typography>
-                            </Box>
-                        </Box>
-
-                        {/* Результат – справа, без лишнего шума */}
-                        <Grid container spacing={2} sx={{ mt: 2 }}>
-                            <Grid size={{ xs: 12, md: 7 }}>
-                                {/* пусто: тут мы оставили только прогресс/тексты; детали — в аккордеонах */}
-                            </Grid>
-                            <Grid size={{ xs: 12, md: 5 }}>
-                                <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, flexWrap: "wrap" }}>
-                                    <Typography variant="subtitle1" color="text.secondary">
-                                        Результат
+                {/* ───────────── Главная область: Прогресс или Результат ───────────── */}
+                {isLoading ? (
+                    // Пока идет генерация - показываем прогресс
+                    <Card variant="outlined">
+                        <CardContent sx={{ py: 8 }}>
+                            <Stack spacing={4} alignItems="center">
+                                <Box sx={{ width: "100%", maxWidth: 600 }}>
+                                    <LinearProgress 
+                                        variant="determinate" 
+                                        value={percent} 
+                                        sx={{ 
+                                            height: 10, 
+                                            borderRadius: 999,
+                                            boxShadow: "0 0 20px rgba(153, 69, 255, 0.3)",
+                                        }}
+                                    />
+                                    <Typography 
+                                        variant="body1" 
+                                        color="text.secondary" 
+                                        sx={{ 
+                                            mt: 3, 
+                                            textAlign: "center", 
+                                            fontWeight: 500,
+                                            fontSize: "18px",
+                                            letterSpacing: 0.3,
+                                        }}
+                                    >
+                                        {currentText}
                                     </Typography>
-                                    {seedHex && (
+                                </Box>
+                            </Stack>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    // Когда готово - показываем число
+                    seedHex && <RangePanel seedHex={seedHex} drawId={drawId} />
+                )}
+
+                {/* ───────────── Детали (все в одном аккордеоне) ───────────── */}
+                <Accordion elevation={0} defaultExpanded={false}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            Детали генерации
+                        </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Stack spacing={3} divider={<Divider />}>
+                            {/* Информация о draw */}
+                            <Stack spacing={1}>
+                                <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                                    ID генерации
+                                </Typography>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
+                                        {drawId}
+                                    </Typography>
+                                    <Tooltip title="Copy draw id">
+                                        <IconButton size="small" onClick={() => copy(drawId, "Draw ID")}>
+                                            <ContentCopyIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Stack>
+                                <Stack direction="row" spacing={1} flexWrap="wrap">
+                                    {sourceChips}
+                                </Stack>
+                            </Stack>
+
+                            {/* Статус бар */}
+                            <StatusBar
+                                status={status}
+                                inputs={inputs}
+                                statusNote={statusNote}
+                                collectOpen={collectOpen}
+                                collectRemainMs={collectRemainMs}
+                            />
+
+                            {/* Результат (технический) */}
+                            {seedHex && (
+                                <Stack spacing={1}>
+                                    <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, flexWrap: "wrap" }}>
+                                        <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                                            Результат (seed)
+                                        </Typography>
                                         <Tooltip title="Copy seed">
                                             <IconButton size="small" onClick={() => copy(seedHex, "Seed")}>
                                                 <ContentCopyIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
-                                    )}
-                                </Box>
-                                <ResultPanel seedHex={seedHex} result={result} />
-                            </Grid>
-                        </Grid>
-                        {seedHex && (
-                            <RangePanel seedHex={seedHex} drawId={drawId} />
-                        )}
-                        <Box sx={{ my: 1}}/>
-                        {/* {seedHex && <QualityPanel seedHex={seedHex} />} */}
-                    </CardContent>
-                </Card>
+                                    </Box>
+                                    <ResultPanel seedHex={seedHex} result={result} />
+                                </Stack>
+                            )}
 
-                {/* ───────────── Детали (свернуто по умолчанию) ───────────── */}
+                            {/* Источник и beacon */}
+                            <SectionAccordion
+                                title="Источник и beacon"
+                                done={srcDone}
+                                summaryHint={srcDone ? "Блоки найдены" : "Ожидание блоков"}
+                            >
+                                <BlocksPanel blocks={blocksList} beaconHex={beaconHex} />
+                            </SectionAccordion>
 
-                {/* Источник и beacon */}
-                <SectionAccordion
-                    title="Источник и beacon"
-                    done={srcDone}
-                    summaryHint={srcDone ? "Блоки найдены" : "Ожидание блоков"}
-                >
-                    <BlocksPanel blocks={blocksList} beaconHex={beaconHex} />
-                </SectionAccordion>
+                            {/* Влияние шума */}
+                            {compare && (
+                                <SectionAccordion
+                                    title="Влияние шума (PUB vs PUB+LOC)"
+                                    done={noiseDone && mixDone}
+                                    summaryHint="Сравнение готово"
+                                >
+                                    <ComparePanel pub={compare.pub} pub_loc={compare.pub_loc} />
+                                </SectionAccordion>
+                            )}
 
-                {/* Влияние шума (сравнение) */}
-                {compare && (
-                    <SectionAccordion
-                        title="Влияние шума (PUB vs PUB+LOC)"
-                        done={noiseDone && mixDone}
-                        summaryHint="Сравнение готово"
-                    >
-                        <ComparePanel pub={compare.pub} pub_loc={compare.pub_loc} />
-                    </SectionAccordion>
-                )}
+                            {/* Трассировка */}
+                            {trace && (
+                                <SectionAccordion
+                                    title="Как получено число (трассировка)"
+                                    done={mixDone}
+                                    summaryHint="Сид, ChaCha и u64 зафиксированы"
+                                >
+                                    <TracePanel trace={trace} />
+                                </SectionAccordion>
+                            )}
 
-                {/* Трассировка */}
-                {trace && (
-                    <SectionAccordion
-                        title="Как получено число (трассировка)"
-                        done={mixDone}
-                        summaryHint="Сид, ChaCha и u64 зафиксированы"
-                    >
-                        <TracePanel trace={trace} />
-                    </SectionAccordion>
-                )}
+                            {/* Серверный шум */}
+                            <SectionAccordion
+                                title="Серверный шум (детали)"
+                                done={noiseDone}
+                                summaryHint={noiseDone ? "Шум собран" : "Сбор шума"}
+                            >
+                                <ServerEntropyPanel
+                                    locBytes={locBytes}
+                                    locPackets={locPackets}
+                                    locRoot={locRoot}
+                                    summary={
+                                        locSummary
+                                            ? {
+                                                urandomBytes: locSummary.urandomBytes,
+                                                jitterBatches: locSummary.jitterBatches,
+                                                jitterBytes: locSummary.jitterBytes,
+                                                jitterSamplesTotal: locSummary.jitterSamplesTotal,
+                                            }
+                                            : null
+                                    }
+                                />
+                            </SectionAccordion>
 
-                {/* Серверный шум */}
-                <SectionAccordion
-                    title="Серверный шум (детали)"
-                    done={noiseDone}
-                    summaryHint={noiseDone ? "Шум собран" : "Сбор шума"}
-                >
-                    <ServerEntropyPanel
-                        locBytes={locBytes}
-                        locPackets={locPackets}
-                        locRoot={locRoot}
-                        summary={
-                            locSummary
-                                ? {
-                                    urandomBytes: locSummary.urandomBytes,
-                                    jitterBatches: locSummary.jitterBatches,
-                                    jitterBytes: locSummary.jitterBytes,
-                                    jitterSamplesTotal: locSummary.jitterSamplesTotal,
-                                }
-                                : null
-                        }
-                    />
-                </SectionAccordion>
-
-                {/* Лог */}
-                <SectionAccordion title="Live log" done={resultDone} summaryHint="Технические события">
-                    <LiveLog events={events} />
-                </SectionAccordion>
+                            {/* Лог */}
+                            <SectionAccordion title="Live log" done={resultDone} summaryHint="Технические события">
+                                <LiveLog events={events} />
+                            </SectionAccordion>
+                        </Stack>
+                    </AccordionDetails>
+                </Accordion>
             </Stack>
 
             <Snackbar
@@ -331,18 +325,18 @@ function statusLabel(
 }
 
 function SectionAccordion({
-                              title,
-                              children,
-                              done,
-                              summaryHint,
-                          }: {
+    title,
+    children,
+    done,
+    summaryHint,
+}: {
     title: string;
     children: React.ReactNode;
     done?: boolean;
     summaryHint?: string;
 }) {
     return (
-        <Accordion elevation={0} disableGutters>
+        <Accordion elevation={0}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Stack
                     direction="row"
@@ -352,7 +346,7 @@ function SectionAccordion({
                 >
                     <Stack direction="row" spacing={1} alignItems="center">
                         {done && <CheckCircleIcon color="success" fontSize="small" />}
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                             {title}
                         </Typography>
                     </Stack>
@@ -364,23 +358,12 @@ function SectionAccordion({
                 </Stack>
             </AccordionSummary>
             <AccordionDetails>
-                <Divider sx={{ mb: 2 }} />
                 {children}
             </AccordionDetails>
         </Accordion>
     );
 }
 
-/**
- * Карта шагов прогресса:
- * 0: Получаем блоки сети Solana…
- * 1: Блоки найдены.
- * 2: Перечисление блоков…
- * 3: Сбор серверного шума… / Шум собран. (опционально)
- * 4: Наложение шумов
- * 5: Шумы наложены
- * 6: Результат
- */
 function useSteps(args: {
     hasBlocks: boolean;
     hasFinalized: boolean;
@@ -402,89 +385,72 @@ function useSteps(args: {
         remainMs,
     } = args;
 
-    // какие шаги присутствуют (шум — опционально)
     const includeNoise = hasLOC || noiseOpen || noiseClosed;
 
     type StepState = "todo" | "doing" | "done";
     type StepItem = { key: string; label: string; state: StepState };
 
-    // формируем состояния шагов
-    const steps: StepItem[] = [];
+    const steps: StepItem[] = [
+        {
+            key: "fetch",
+            label: "Получаем блоки сети Solana…",
+            state: !hasFinalized ? "doing" : "done",
+        },
+        {
+            key: "found",
+            label: "Блоки найдены.",
+            state: hasFinalized ? "done" : "todo",
+        },
+        {
+            key: "list",
+            label: "Перечисление блоков…",
+            state: hasBlocks ? "done" : hasFinalized ? "doing" : "todo",
+        },
+        ...(includeNoise
+            ? [
+                  {
+                      key: "collect",
+                      label: noiseClosed ? "Шум собран." : "Сбор серверного шума…",
+                      state: noiseClosed ? "done" : noiseOpen ? "doing" : "todo",
+                  } as StepItem,
+              ]
+            : []),
+        {
+            key: "mix",
+            label: "Наложение шумов",
+            state: mixed ? "done" : hasFinalized ? "doing" : "todo",
+        },
+        {
+            key: "mixed",
+            label: "Шумы наложены",
+            state: mixed ? "done" : "todo",
+        },
+        {
+            key: "result",
+            label: "Результат",
+            state: hasResult ? "done" : mixed ? "doing" : "todo",
+        },
+    ];
 
-    // 0
-    steps.push({
-        key: "fetch",
-        label: "Получаем блоки сети Solana…",
-        state: !hasFinalized ? "doing" : "done",
-    });
-    // 1
-    steps.push({
-        key: "found",
-        label: "Блоки найдены.",
-        state: hasFinalized ? "done" : "todo",
-    });
-    // 2
-    steps.push({
-        key: "list",
-        label: "Перечисление блоков…",
-        state: hasBlocks ? "done" : hasFinalized ? "doing" : "todo",
-    });
-    // 3 (optional)
-    if (includeNoise) {
-        steps.push({
-            key: "collect",
-            label: noiseClosed ? "Шум собран." : "Сбор серверного шума…",
-            state: noiseClosed ? "done" : noiseOpen ? "doing" : "todo",
-        });
-    }
-    // 4
-    steps.push({
-        key: "mix",
-        label: "Наложение шумов",
-        state: mixed ? "done" : hasFinalized ? "doing" : "todo",
-    });
-    // 5
-    steps.push({
-        key: "mixed",
-        label: "Шумы наложены",
-        state: mixed ? "done" : "todo",
-    });
-    // 6
-    steps.push({
-        key: "result",
-        label: "Результат",
-        state: hasResult ? "done" : mixed ? "doing" : "todo",
-    });
-
-    // активный индекс — первый не-done
-    const activeIndex = Math.max(
-        0,
-        steps.findIndex((s) => s.state !== "done")
-    );
-
-    // проценты: доля done + половинка за doing
+    const activeIndex = Math.max(0, steps.findIndex((s) => s.state !== "done"));
     const doneCount = steps.filter((s) => s.state === "done").length;
     const hasDoing = steps.some((s) => s.state === "doing");
     const base = (doneCount / steps.length) * 100;
-    const percent = Math.min(100, base + (hasDoing ? 6 : 0)); // лёгкий «подъём» на active
+    const percent = Math.min(100, base + (hasDoing ? 6 : 0));
 
-    // текущий текст под прогрессом
     let currentText = steps[activeIndex]?.label ?? "Готово";
     if (steps[activeIndex]?.key === "collect" && typeof remainMs === "number") {
         currentText = `Сбор серверного шума… ${Math.ceil(remainMs / 1000)} с`;
     }
 
-    // флаги готовности для секций
-    const srcDone = hasBlocks;
-    const noiseDone = includeNoise ? noiseClosed : true;
-    const mixDone = mixed;
-    const resultDone = hasResult;
-
     return {
-        steps,
-        activeIndex: activeIndex === -1 ? steps.length - 1 : activeIndex,
         percent,
         currentText,
-        done: { srcDone, noiseDone, mixDone, resultDone },
+        done: {
+            srcDone: hasBlocks,
+            noiseDone: includeNoise ? noiseClosed : true,
+            mixDone: mixed,
+            resultDone: hasResult,
+        },
     };
 }

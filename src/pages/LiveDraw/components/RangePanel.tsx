@@ -1,76 +1,73 @@
 // src/pages/LiveDraw/components/RangePanel.tsx
 import { useState, useEffect } from "react";
-import { Card, CardContent, Stack, Typography, Chip, Tooltip, IconButton } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { sampleRangeBySeed } from "../../../lib/api";
 
 export function RangePanel({ seedHex, drawId }: { seedHex: string | null; drawId: string }) {
-    const [res, setRes] = useState<null | any>(null);
-    const [loading, setLoading] = useState(false);
+  const [res, setRes] = useState<null | any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!seedHex) {
-            setRes(null);
-            return;
-        }
+  useEffect(() => {
+    if (!seedHex) {
+      setRes(null);
+      return;
+    }
 
-        const generate = async () => {
-            setLoading(true);
-            try {
-                const data = await sampleRangeBySeed({
-                    seed_hex: seedHex,
-                    n1: "0",
-                    n2: "9",
-                    label: "RANDOM/v1",
-                    draw_id: drawId,
-                });
-                setRes(data);
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const generate = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await sampleRangeBySeed({
+          seed_hex: seedHex,
+          n1: "0",
+          n2: "9",
+          label: "RANDOM/v1",
+          draw_id: drawId,
+        });
+        setRes(data);
+      } catch (e) {
+        console.error(e);
+        const msg = (e as any)?.message || "Ошибка запроса";
+        setError(msg);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        generate();
-    }, [seedHex, drawId]);
+    generate();
+  }, [seedHex, drawId]);
 
-    return (
-        <Card variant="outlined">
-            <CardContent>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                    <Typography variant="subtitle1">Случайное число</Typography>
-                </Stack>
+  return (
+    <div className="w-full py-12 md:py-16">
+      {loading && (
+        <div className="flex items-center justify-center">
+          <div
+            className="text-[96px] md:text-[160px] font-bold font-mono text-muted-foreground/40 animate-pulse"
+            style={{ animation: "gentlePulse 2s ease-in-out infinite" }}
+          >
+            ...
+          </div>
+        </div>
+      )}
 
-                {loading && (
-                    <Typography variant="body2" color="text.secondary">
-                        Генерация...
-                    </Typography>
-                )}
-
-                {res && !loading && (
-                    <Stack spacing={1} sx={{ mt: 1 }}>
-                        <Typography variant="h3" sx={{ fontWeight: 700, fontSize: { xs: 48, md: 64 } }}>
-                            {res.value}
-                        </Typography>
-                        <Stack direction="row" spacing={1} flexWrap="wrap">
-                            <Chip label={`диапазон: [${res.lo}..${res.hi}]`} />
-                            <Chip label={`размер: ${res.rangeSize}`} />
-                            {/* <Chip label={`попыток: ${res.attempts}`} /> */}
-                            {res.rejected > 0 && <Chip color="warning" label={`отклонено: ${res.rejected}`} />}
-                        </Stack>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                            <Typography variant="body2" color="text.secondary">subseed:</Typography>
-                            <code style={{ fontSize: 12, wordBreak: "break-all" }}>{res.subseedHex}</code>
-                            <Tooltip title="Copy">
-                                <IconButton size="small" onClick={() => navigator.clipboard.writeText(res.subseedHex)}>
-                                    <ContentCopyIcon fontSize="small" />
-                                </IconButton>
-                            </Tooltip>
-                        </Stack>
-                    </Stack>
-                )}
-            </CardContent>
-        </Card>
-    );
+      {res && !loading && (
+        <div className="flex items-center justify-center">
+          <div
+            className="text-[96px] md:text-[160px] font-bold font-mono"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              animation: "fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1), glow-pulse 3s ease-in-out infinite",
+              textShadow: "0 0 40px hsl(var(--glow-primary) / 0.5)",
+              filter: "drop-shadow(0 0 20px hsl(var(--glow-primary) / 0.6))",
+            }}
+          >
+            {res.value}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

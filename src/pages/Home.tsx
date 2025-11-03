@@ -73,8 +73,21 @@ export default function Home() {
                 sx={(theme) => ({
                     border: `1px solid ${theme.palette.divider}`,
                     borderRadius: 3,
-                    p: { xs: 3, md: 5 },
+                    p: { xs: 4, md: 6 },
                     backgroundColor: theme.palette.background.paper,
+                    backdropFilter: "blur(20px)",
+                    position: "relative",
+                    overflow: "hidden",
+                    "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: "2px",
+                        background: "linear-gradient(90deg, transparent, #9945FF, #FF6B9D, transparent)",
+                        animation: "shimmer 3s infinite",
+                    },
                 })}
             >
                 <Stack spacing={2}>
@@ -86,7 +99,17 @@ export default function Home() {
                         sx={{ alignSelf: "start" }}
                     />
 
-                    <Typography variant="h1" sx={{ fontSize: { xs: 28, md: 36 }, letterSpacing: -0.2 }}>
+                    <Typography 
+                        variant="h1" 
+                        sx={{ 
+                            fontSize: { xs: 32, md: 48 }, 
+                            letterSpacing: -0.5,
+                            background: "linear-gradient(135deg, #FFFFFF 0%, #9945FF 50%, #FF6B9D 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            fontWeight: 700,
+                        }}
+                    >
                         Честные тиражи на публичной энтропии
                     </Typography>
 

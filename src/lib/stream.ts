@@ -46,6 +46,7 @@ export function subscribeCurrentSSE(
     es.onmessage = (ev) => {
         try {
             const raw = JSON.parse(ev.data);
+            console.log('raw', raw);
             if (raw && typeof raw === 'object' && raw.type === 'current' && typeof raw.drawId === 'string') {
                 onMessage(raw);
             }
