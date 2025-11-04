@@ -175,10 +175,19 @@ export default function LiveDraw({ drawIdOverride }: { drawIdOverride?: string }
                 )}
 
                 {/* ───────────── Детали (все в одном аккордеоне) ───────────── */}
-                <Accordion elevation={0} defaultExpanded={false}>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Accordion elevation={0} defaultExpanded={false} sx={{
+                    backgroundColor: 'rgba(255,255,255,0.06)',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    color: 'text.primary',
+                    borderRadius: 2,
+                    '&:before': { display: 'none' },
+                    '& .MuiAccordionSummary-root': { backgroundColor: 'transparent', borderRadius: 2 },
+                    '& .MuiAccordionDetails-root': { backgroundColor: 'transparent', borderRadius: 2 },
+                }}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'text.primary' }} />}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                            Детали генерации
+                            Generation details
                         </Typography>
                     </AccordionSummary>
                     <AccordionDetails>
@@ -186,7 +195,7 @@ export default function LiveDraw({ drawIdOverride }: { drawIdOverride?: string }
                             {/* Информация о draw */}
                             <Stack spacing={1}>
                                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600 }}>
-                                    ID генерации
+                                    Draw ID
                                 </Typography>
                                 <Stack direction="row" spacing={1} alignItems="center">
                                     <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
@@ -212,12 +221,12 @@ export default function LiveDraw({ drawIdOverride }: { drawIdOverride?: string }
                                 collectRemainMs={collectRemainMs}
                             />
 
-                            {/* Результат (технический) */}
+                            {/* Result (technical) */}
                             {seedHex && (
                                 <Stack spacing={1}>
                                     <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, flexWrap: "wrap" }}>
                                         <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600 }}>
-                                            Результат (seed)
+                                            Result (seed)
                                         </Typography>
                                         <Tooltip title="Copy seed">
                                             <IconButton size="small" onClick={() => copy(seedHex, "Seed")}>
@@ -229,42 +238,42 @@ export default function LiveDraw({ drawIdOverride }: { drawIdOverride?: string }
                                 </Stack>
                             )}
 
-                            {/* Источник и beacon */}
+                            {/* Source & beacon */}
                             <SectionAccordion
-                                title="Источник и beacon"
+                                title="Source & beacon"
                                 done={srcDone}
-                                summaryHint={srcDone ? "Блоки найдены" : "Ожидание блоков"}
+                                summaryHint={srcDone ? "Blocks found" : "Waiting for blocks"}
                             >
                                 <BlocksPanel blocks={blocksList} beaconHex={beaconHex} />
                             </SectionAccordion>
 
-                            {/* Влияние шума */}
+                            {/* Noise impact */}
                             {compare && (
                                 <SectionAccordion
-                                    title="Влияние шума (PUB vs PUB+LOC)"
+                                    title="Noise impact (PUB vs PUB+LOC)"
                                     done={noiseDone && mixDone}
-                                    summaryHint="Сравнение готово"
+                                    summaryHint="Comparison ready"
                                 >
                                     <ComparePanel pub={compare.pub} pub_loc={compare.pub_loc} />
                                 </SectionAccordion>
                             )}
 
-                            {/* Трассировка */}
+                            {/* Trace */}
                             {trace && (
                                 <SectionAccordion
-                                    title="Как получено число (трассировка)"
+                                    title="How the number is derived (trace)"
                                     done={mixDone}
-                                    summaryHint="Сид, ChaCha и u64 зафиксированы"
+                                    summaryHint="Seed, ChaCha and u64 recorded"
                                 >
                                     <TracePanel trace={trace} />
                                 </SectionAccordion>
                             )}
 
-                            {/* Серверный шум */}
+                            {/* Server noise */}
                             <SectionAccordion
-                                title="Серверный шум (детали)"
+                                title="Server noise (details)"
                                 done={noiseDone}
-                                summaryHint={noiseDone ? "Шум собран" : "Сбор шума"}
+                                summaryHint={noiseDone ? "Noise collected" : "Collecting noise"}
                             >
                                 <ServerEntropyPanel
                                     locBytes={locBytes}
@@ -283,8 +292,8 @@ export default function LiveDraw({ drawIdOverride }: { drawIdOverride?: string }
                                 />
                             </SectionAccordion>
 
-                            {/* Лог */}
-                            <SectionAccordion title="Live log" done={resultDone} summaryHint="Технические события">
+                            {/* Log */}
+                            <SectionAccordion title="Live log" done={resultDone} summaryHint="Technical events">
                                 <LiveLog events={events} />
                             </SectionAccordion>
                         </Stack>
@@ -336,8 +345,17 @@ function SectionAccordion({
     summaryHint?: string;
 }) {
     return (
-        <Accordion elevation={0}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Accordion elevation={0} sx={{
+            backgroundColor: 'rgba(255,255,255,0.06)',
+            border: '1px solid',
+            borderColor: 'divider',
+            color: 'text.primary',
+            borderRadius: 2,
+            '&:before': { display: 'none' },
+            '& .MuiAccordionSummary-root': { backgroundColor: 'transparent', borderRadius: 2 },
+            '& .MuiAccordionDetails-root': { backgroundColor: 'transparent', borderRadius: 2 },
+        }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'text.primary' }} />}>
                 <Stack
                     direction="row"
                     spacing={1}

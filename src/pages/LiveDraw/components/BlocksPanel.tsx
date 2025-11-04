@@ -13,11 +13,11 @@ export function BlocksPanel({ blocks, beaconHex }: Props) {
   return (
     <>
       <div className="text-sm font-medium text-muted-foreground mb-2">
-        1) Источник: финализированные блоки Solana
+        1) Source: Solana finalized blocks
       </div>
 
       {blocks.length === 0 ? (
-        <div className="text-sm text-muted-foreground">Ждём финализированные блоки…</div>
+        <div className="text-sm text-muted-foreground">Waiting for finalized blocks…</div>
       ) : (
         <div className="space-y-2 mb-4">
           {blocks.map((b) => (
@@ -42,7 +42,7 @@ export function BlocksPanel({ blocks, beaconHex }: Props) {
       {beaconHex && (
         <div className="mt-4">
           <div className="text-sm font-medium text-muted-foreground mb-2">
-            2) Beacon (конкатенация base58→bytes хэшей блоков)
+            2) Beacon (concatenate base58→bytes of block hashes)
           </div>
           <div className="flex items-center gap-2 p-3 bg-card border border-border rounded-lg">
             <code className="text-xs font-mono text-foreground break-all flex-1">{beaconHex}</code>

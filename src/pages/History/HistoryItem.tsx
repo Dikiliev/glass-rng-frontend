@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link as RouterLink } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
-    Box, Button, Card, CardContent, Chip, Container, Divider, Grid, IconButton, Stack,
-    Tooltip, Typography, Accordion, AccordionSummary, AccordionDetails, TextField, MenuItem
+    Box, Card, CardContent, Chip, Container, Divider, Grid, IconButton, Stack,
+    Tooltip, Typography, Accordion, AccordionSummary, AccordionDetails
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DownloadIcon from "@mui/icons-material/Download";
 
 import { getHistoryById, type HistoryRecord } from "../../lib/api";
-import { api } from "../../lib/http";
-import {MultiSamplePanel} from "../LiveDraw/components/MultiSamplePanel.tsx";
+import { sampleRangeBySeedLocal } from "../../lib/rangeLocal";
 
 /* ───────────────────── helpers (локально, чтоб не тянуть лишние зависимости) ───────────────────── */
 
@@ -28,24 +26,30 @@ function u64ToDecimalString(u64: bigint, decimals = 18): string {
     return `${head}.${tail}`.replace(/^0+(?=\d)/, (m) => (m.length ? "0" : ""));
 }
 
-function modNUnbiasedPreview(x: bigint, N: bigint) {
-    const TWO64 = 1n << 64n;
-    if (N <= 1n) return { value: 0n, biased: true, reject: true };
-    const t = TWO64 - (TWO64 % N);
-    if (x < t) {
-        return { value: x % N, biased: false, reject: false };
-    }
-    // для честного результата нужен пересэмплинг (в истории у нас один u64)
-    return { value: x % N, biased: true, reject: true };
-}
-
 function PrettyMono({ children }: { children: React.ReactNode }) {
-    return <Box sx={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", wordBreak: "break-all" }}>{children}</Box>;
+    return (
+        <Box
+            sx={{
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                wordBreak: "break-all",
+                color: 'hsl(var(--foreground))',
+            }}
+        >
+            {children}
+        </Box>
+    );
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
     return (
-        <Typography variant="subtitle1" sx={{ color: "text.secondary", fontWeight: 600 }}>
+        <Typography
+            variant="subtitle1"
+            sx={{
+                color: 'hsl(var(--foreground))',
+                fontWeight: 700,
+                letterSpacing: 0.2,
+            }}
+        >
             {children}
         </Typography>
     );
@@ -57,11 +61,6 @@ export default function HistoryItemPage() {
     const { drawId = "" } = useParams();
     const [rec, setRec] = useState<HistoryRecord | null>(null);
 
-    // для выгрузки битов
-    const [bits, setBits] = useState<string>("1000000");
-    const [fmt, setFmt] = useState<"txt" | "bin">("txt");
-    const [sep, setSep] = useState<"none" | "newline">("none");
-
     useEffect(() => {
         if (drawId) getHistoryById(drawId).then(setRec);
     }, [drawId]);
@@ -69,28 +68,18 @@ export default function HistoryItemPage() {
     const u64 = useMemo(() => (rec ? BigInt(rec.result.u64) : 0n), [rec]);
     const u01 = useMemo(() => (rec ? u64ToDecimalString(u64, 18) : "0.0"), [rec, u64]);
 
-    // для «число в диапазоне»
-    const [nMin, setNMin] = useState<string>("1");
-    const [nMax, setNMax] = useState<string>("100");
-    const rangePreview = useMemo(() => {
+    // final digit 0..9 computed locally (same algo as backend /range/by-seed)
+    const digit = useMemo(() => {
+        if (!rec?.result?.seedHex) return null;
         try {
-            const a = BigInt(nMin);
-            const b = BigInt(nMax);
-            if (b <= a) return { text: "Введите корректный диапазон: min < max", warn: true };
-            const N = b - a + 1n;
-            const { value, biased, reject } = modNUnbiasedPreview(u64, N);
-            const mapped = a + value;
-            if (reject) {
-                return {
-                    text: `Предпросмотр: ${mapped.toString()} (bias possible: нужен пересэмплинг для полной честности)`,
-                    warn: true,
-                };
-            }
-            return { text: `x ∈ [${a}, ${b}]: ${mapped.toString()} (unbiased)`, warn: false };
+            const { value } = sampleRangeBySeedLocal({ seedHex: rec.result.seedHex, n1: 0, n2: 9, label: "RANDOM/v1" });
+            return value;
         } catch {
-            return { text: "Введите числа (целые)", warn: true };
+            return null;
         }
-    }, [nMin, nMax, u64]);
+    }, [rec?.result?.seedHex]);
+
+    // no manual range preview on this page
 
     if (!rec) return null;
 
@@ -98,26 +87,19 @@ export default function HistoryItemPage() {
 
 
 
-    async function downloadBits() {
-        const url = "/tests/bitstream/by-seed";
-        const body = { seed_hex: rec.result.seedHex, bits: Number(bits), fmt, sep };
-        const response = await api.post(url, body, { responseType: "blob" });
-        const blob = new Blob([response.data], { type: fmt === "txt" ? "text/plain" : "application/octet-stream" });
-        const filename = `bits_${bits}_${fmt}.${fmt === "txt" ? "txt" : "bin"}`;
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(a.href);
-    }
-
     return (
-        <Container sx={{ mt: 6, mb: 6 }}>
-            <Stack spacing={3}>
-                {/* ───────── Header / Overview ───────── */}
+        <Container maxWidth="lg" sx={{ mt: 12, mb: 6, position: 'relative' }}>
+            {/* subtle background */}
+            <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.05,
+                backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)`, backgroundSize: '24px 24px' }} />
+            <Stack spacing={3} sx={{ position: 'relative' }}>
+                {/* Header / Overview */}
                 <Stack spacing={0.5}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="h4" fontWeight={700}>Тираж</Typography>
+                        <Typography variant="h4" fontWeight={800} sx={{
+                            background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
+                            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
+                        }}>Draw</Typography>
                         <Chip label="saved" size="small" />
                         <Box sx={{ flex: 1 }} />
                     </Stack>
@@ -132,18 +114,32 @@ export default function HistoryItemPage() {
                         </Stack>
                         <Box sx={{ flex: 1 }} />
                         <Stack direction="row" spacing={1} flexWrap="wrap">
-                            {(rec.inputs || []).map(s => <Chip key={s} size="small" label={`src:${s}`} />)}
+                            {(rec.inputs || []).map(s => (
+                                <Chip
+                                    key={s}
+                                    size="small"
+                                    label={`src:${s}`}
+                                    sx={{
+                                        mr: .5,
+                                        color: 'hsl(var(--foreground))',
+                                        backgroundColor: 'hsl(var(--muted))',
+                                        border: '1px solid hsl(var(--border))',
+                                    }}
+                                />
+                            ))}
                         </Stack>
                     </Stack>
                 </Stack>
 
-                {/* ───────── Summary card ───────── */}
-                <Card variant="outlined">
+                {/* Summary card */}
+                <Card variant="outlined" sx={{
+                    backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'hsl(var(--border))', backdropFilter: 'blur(6px)'
+                }}>
                     <CardContent>
                         <Grid container spacing={2}>
                             <Grid size={{ xs: 12, md: 12 }} spacing={2}>
-                                <SectionTitle>Основной результат</SectionTitle>
-                                <Card variant="outlined" sx={{ my: 2 }}>
+                                <SectionTitle>Result</SectionTitle>
+                                <Card variant="outlined" sx={{ my: 2, backgroundColor: 'rgba(255,255,255,0.03)' }}>
                                     <CardContent>
                                         <Typography variant="body2" color="text.secondary">Seed (HKDF)</Typography>
                                         <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: .5 }}>
@@ -151,47 +147,56 @@ export default function HistoryItemPage() {
                                             <Tooltip title="Copy seed"><IconButton size="small" onClick={() => copy(rec.result.seedHex)}><ContentCopyIcon fontSize="small" /></IconButton></Tooltip>
                                         </Stack>
                                         <Divider sx={{ my: 1 }} />
-                                        <Typography variant="h4">{rec.result.u64}</Typography>
-                                        <Typography variant="body2" color="text.secondary">u64 ∈ 0..2^64−1</Typography>
-                                        <Typography variant="body2" sx={{ mt: .5 }}>u ∈ [0,1): <PrettyMono>{u01}</PrettyMono></Typography>
+                                        {/* Final digit (0..9) */}
+                                        <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                                            <Box sx={{
+                                                fontFamily: 'JetBrains Mono, monospace', fontWeight: 900,
+                                                fontSize: { xs: '72px', md: '96px' }, lineHeight: 1,
+                                                background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%)',
+                                                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                                                textShadow: '0 0 40px hsl(var(--glow-primary) / 0.45)'
+                                            }}>
+                                                {digit !== null ? digit : '—'}
+                                            </Box>
+                                            <Box sx={{ textAlign: 'right' }}>
+                                                <Typography variant="body2" color="text.secondary">u64 ∈ 0..2^64−1</Typography>
+                                                <Typography variant="body2" sx={{ mt: .5 }}>u ∈ [0,1): <PrettyMono>{u01}</PrettyMono></Typography>
+                                            </Box>
+                                        </Box>
                                     </CardContent>
                                 </Card>
-
-                                {/* Интерпретация: число в диапазоне */}
-                                <SectionTitle>Число в диапазоне</SectionTitle>
-                                <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ my: 1 }}>
-                                    <TextField
-                                        size="small"
-                                        label="min"
-                                        value={nMin}
-                                        onChange={(e) => setNMin(e.target.value)}
-                                        sx={{ maxWidth: 180 }}
-                                    />
-                                    <TextField
-                                        size="small"
-                                        label="max"
-                                        value={nMax}
-                                        onChange={(e) => setNMax(e.target.value)}
-                                        sx={{ maxWidth: 180 }}
-                                    />
-                                    <Box sx={{ alignSelf: "center", color: rangePreview.warn ? "warning.main" : "text.secondary" }}>
-                                        {rangePreview.text}
-                                    </Box>
-                                </Stack>
-
-                                {rec.result.seedHex && <MultiSamplePanel seedHex={rec.result.seedHex} drawId={drawId} />}
+                                {/* No manual generation controls on this page */}
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 5 }}>
-                                <SectionTitle>Быстрые факты</SectionTitle>
-                                <Card variant="outlined">
+                                <SectionTitle>Quick facts</SectionTitle>
+                                <Card
+                                    variant="outlined"
+                                    sx={{
+                                        backgroundColor: 'rgba(255,255,255,0.06)',
+                                        borderColor: 'hsl(var(--border))',
+                                        color: 'hsl(var(--foreground))',
+                                    }}
+                                >
                                     <CardContent>
                                         <Stack spacing={1}>
-                                            <Row label="Дата">
+                                            <Row label="Date">
                                                 {new Date(rec.createdAt).toLocaleString()}
                                             </Row>
-                                            <Row label="Источники">
-                                                {(rec.inputs || []).map(s => <Chip key={s} size="small" label={`src:${s}`} sx={{ mr: .5 }} />)}
+                                            <Row label="Sources">
+                                                {(rec.inputs || []).map(s => (
+                                                    <Chip
+                                                        key={s}
+                                                        size="small"
+                                                        label={`src:${s}`}
+                                                        sx={{
+                                                            mr: .5,
+                                                            color: 'hsl(var(--foreground))',
+                                                            backgroundColor: 'hsl(var(--muted))',
+                                                            border: '1px solid hsl(var(--border))',
+                                                        }}
+                                                    />
+                                                ))}
                                             </Row>
                                             {rec.entropy?.locRoot && (
                                                 <Row label="LOC root">
@@ -206,16 +211,31 @@ export default function HistoryItemPage() {
                     </CardContent>
                 </Card>
 
-                {/* ───────── Секции со сворачиванием (минимум шума по умолчанию) ───────── */}
+                {/* Collapsible sections */}
 
-                {/* Источники блоков */}
-                <Accordion sx={{ borderRadius: 2 }} defaultExpanded={false}>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography fontWeight={600}>Источники блоков</Typography>
+                {/* Block sources */}
+                <Accordion
+                    sx={{
+                        borderRadius: 2,
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--foreground))',
+                        '&:before': { display: 'none' },
+                        '& .MuiAccordionSummary-root': {
+                            backgroundColor: 'transparent',
+                        },
+                        '& .MuiAccordionDetails-root': {
+                            backgroundColor: 'transparent',
+                        },
+                    }}
+                    defaultExpanded={false}
+                >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'text.primary' }} />}>
+                        <Typography fontWeight={600}>Block sources</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                         {chains.length === 0 ? (
-                            <Typography color="text.secondary">Нет публичных источников в записи.</Typography>
+                            <Typography color="text.secondary">No public sources in this record.</Typography>
                         ) : (
                             chains.map((chain) => (
                                 <Box key={chain} sx={{ mb: 2 }}>
@@ -244,18 +264,29 @@ export default function HistoryItemPage() {
                     </AccordionDetails>
                 </Accordion>
 
-                {/* Трассировка */}
+                {/* Trace */}
                 {rec.trace && (
-                    <Accordion sx={{ borderRadius: 2 }} defaultExpanded={false}>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography fontWeight={600}>Как получено число — шаг за шагом</Typography>
+                    <Accordion
+                        sx={{
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255,255,255,0.06)',
+                            border: '1px solid hsl(var(--border))',
+                            color: 'hsl(var(--foreground))',
+                            '&:before': { display: 'none' },
+                            '& .MuiAccordionSummary-root': { backgroundColor: 'transparent' },
+                            '& .MuiAccordionDetails-root': { backgroundColor: 'transparent' },
+                        }}
+                        defaultExpanded={false}
+                    >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'text.primary' }} />}>
+                            <Typography fontWeight={600}>How the number is derived — step by step</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             <Stack spacing={1} sx={{ mb: 2 }}>
-                                <Typography variant="body2">1) Домашинг источника: H("SOL"‖beacon)</Typography>
-                                <Typography variant="body2">2) HKDF с солью от drawId → seed</Typography>
-                                <Typography variant="body2">3) ChaCha20(seed) → первые 8 байт = u64</Typography>
-                                <Typography variant="body2">4) Нормализация: u64 / 2^64 → [0,1)</Typography>
+                                <Typography variant="body2">1) Source hashing: H("SOL"‖beacon)</Typography>
+                                <Typography variant="body2">2) HKDF with salt from drawId → seed</Typography>
+                                <Typography variant="body2">3) ChaCha20(seed) → first 8 bytes = u64</Typography>
+                                <Typography variant="body2">4) Normalization: u64 / 2^64 → [0,1)</Typography>
                             </Stack>
                             <Stack spacing={1}>
                                 <Row label='beaconHex'><PrettyMono>{rec.trace.beaconHex}</PrettyMono></Row>
@@ -272,17 +303,32 @@ export default function HistoryItemPage() {
                     </Accordion>
                 )}
 
-                {/* Сравнение PUB vs PUB+LOC */}
+                {/* Comparison PUB vs PUB+LOC */}
                 {rec.compare && (
-                    <Accordion sx={{ borderRadius: 2 }} defaultExpanded={false}>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography fontWeight={600}>Влияние шума (сравнение)</Typography>
+                    <Accordion
+                        sx={{
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255,255,255,0.06)',
+                            border: '1px solid hsl(var(--border))',
+                            color: 'hsl(var(--foreground))',
+                            '&:before': { display: 'none' },
+                            '& .MuiAccordionSummary-root': { backgroundColor: 'transparent' },
+                            '& .MuiAccordionDetails-root': { backgroundColor: 'transparent' },
+                        }}
+                        defaultExpanded={false}
+                    >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'text.primary' }} />}>
+                            <Typography fontWeight={600}>Noise impact (comparison)</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             <Grid container spacing={2}>
                                 <Grid size={{ xs: 12, md: 6 }}>
-                                    <SectionTitle>PUB только</SectionTitle>
-                                    <Card variant="outlined">
+                                    <SectionTitle>PUB only</SectionTitle>
+                                    <Card variant="outlined" sx={{
+                                        backgroundColor: 'rgba(255,255,255,0.06)',
+                                        borderColor: 'hsl(var(--border))',
+                                        color: 'hsl(var(--foreground))',
+                                    }}>
                                         <CardContent>
                                             <Row label="seed"><PrettyMono>{rec.compare.pub.seedHex}</PrettyMono></Row>
                                             <Row label="ChaCha first 16B"><PrettyMono>{rec.compare.pub.chachaFirst16Hex}</PrettyMono></Row>
@@ -293,7 +339,11 @@ export default function HistoryItemPage() {
                                 </Grid>
                                 <Grid size={{ xs: 12, md: 6 }}>
                                     <SectionTitle>PUB + LOC</SectionTitle>
-                                    <Card variant="outlined">
+                                    <Card variant="outlined" sx={{
+                                        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderColor: 'hsl(var(--border))',
+        color: 'hsl(var(--foreground))',
+                                    }}>
                                         <CardContent>
                                             <Row label="seed"><PrettyMono>{rec.compare.pub_loc.seedHex}</PrettyMono></Row>
                                             <Row label="ChaCha first 16B"><PrettyMono>{rec.compare.pub_loc.chachaFirst16Hex}</PrettyMono></Row>
@@ -307,17 +357,28 @@ export default function HistoryItemPage() {
                     </Accordion>
                 )}
 
-                {/* Серверный шум */}
+                {/* Server noise */}
                 {(rec.entropy?.locRoot) && (
-                    <Accordion sx={{ borderRadius: 2 }} defaultExpanded={false}>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography fontWeight={600}>Серверный шум</Typography>
+                    <Accordion
+                        sx={{
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255,255,255,0.06)',
+                            border: '1px solid hsl(var(--border))',
+                            color: 'hsl(var(--foreground))',
+                            '&:before': { display: 'none' },
+                            '& .MuiAccordionSummary-root': { backgroundColor: 'transparent' },
+                            '& .MuiAccordionDetails-root': { backgroundColor: 'transparent' },
+                        }}
+                        defaultExpanded={false}
+                    >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'text.primary' }} />}>
+                            <Typography fontWeight={600}>Server noise</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             <Row label="LOC root"><PrettyMono>{rec.entropy.locRoot}</PrettyMono></Row>
                             {rec.entropy.summary && (
                                 <Box sx={{ mt: 1 }}>
-                                    <Typography variant="body2" color="text.secondary">Суммарно:</Typography>
+                                    <Typography variant="body2" color="text.secondary">Summary:</Typography>
                                     <Stack direction="row" spacing={1} sx={{ mt: .5 }} flexWrap="wrap">
                                         {"urandomBytes" in rec.entropy.summary && <Chip size="small" label={`urandom: ${rec.entropy.summary.urandomBytes}`} />}
                                         {"jitterBatches" in rec.entropy.summary && <Chip size="small" label={`jitter batches: ${rec.entropy.summary.jitterBatches}`} />}
@@ -329,59 +390,6 @@ export default function HistoryItemPage() {
                         </AccordionDetails>
                     </Accordion>
                 )}
-
-                {/* Выгрузка бит для NIST/Dieharder */}
-                <Accordion sx={{ borderRadius: 2 }} defaultExpanded={false}>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography fontWeight={600}>Проверка качества: выгрузка бит</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                            Генерируем поток бит на основе сохранённого seed. Подходит для NIST STS / Dieharder / TestU01.
-                        </Typography>
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center">
-                            <TextField
-                                size="small"
-                                label="Количество бит"
-                                value={bits}
-                                onChange={(e) => setBits(e.target.value)}
-                                sx={{ maxWidth: 200 }}
-                            />
-                            <TextField
-                                select
-                                size="small"
-                                label="Формат"
-                                value={fmt}
-                                onChange={(e) => setFmt(e.target.value as "txt" | "bin")}
-                                sx={{ maxWidth: 180 }}
-                            >
-                                <MenuItem value="txt">Текст (ASCII 0/1)</MenuItem>
-                                <MenuItem value="bin">Бинарный</MenuItem>
-                            </TextField>
-                            {fmt === "txt" && (
-                                <TextField
-                                    select
-                                    size="small"
-                                    label="Сепаратор"
-                                    value={sep}
-                                    onChange={(e) => setSep(e.target.value as "none" | "newline")}
-                                    sx={{ maxWidth: 200 }}
-                                >
-                                    <MenuItem value="none">Без разделителей</MenuItem>
-                                    <MenuItem value="newline">Каждый бит с новой строки</MenuItem>
-                                </TextField>
-                            )}
-                            <Button variant="contained" startIcon={<DownloadIcon />} onClick={downloadBits}>
-                                Скачать
-                            </Button>
-                        </Stack>
-                        <Box sx={{ mt: 1 }}>
-                            <Typography variant="caption" color="text.secondary">
-                                Рекомендация: для NIST STS — не меньше 1,000,000 бит.
-                            </Typography>
-                        </Box>
-                    </AccordionDetails>
-                </Accordion>
             </Stack>
         </Container>
     );
@@ -391,7 +399,7 @@ export default function HistoryItemPage() {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <Stack direction="row" spacing={1} sx={{ alignItems: "baseline" }}>
-            <Typography variant="body2" sx={{ width: 160, color: "text.secondary" }}>{label}</Typography>
+            <Typography variant="body2" sx={{ width: 160, color: 'hsl(var(--muted-foreground))' }}>{label}</Typography>
             <Box sx={{ flex: 1 }}>{children}</Box>
         </Stack>
     );

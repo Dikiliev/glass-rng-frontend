@@ -8,13 +8,13 @@ export function TracePanel({ trace }: Props) {
     <Card className="border-border bg-card/50">
       <CardContent className="p-4">
         <div className="text-sm font-medium text-muted-foreground mb-2">
-          Как получено число — шаг за шагом
+          How the number is derived — step by step
         </div>
         <div className="space-y-1 mb-4 text-sm text-foreground">
-          <div>3) Домашинг источника: H("SOL"‖beacon).</div>
-          <div>4) HKDF с солью от drawId → seed.</div>
-          <div>5) ChaCha20(seed) → первые 8 байт = u64.</div>
-          <div>6) Нормализация: u64 / 2^64 → [0,1).</div>
+          <div>3) Source hashing: H("SOL"‖beacon).</div>
+          <div>4) HKDF with salt from drawId → seed.</div>
+          <div>5) ChaCha20(seed) → first 8 bytes = u64.</div>
+          <div>6) Normalization: u64 / 2^64 → [0,1).</div>
         </div>
 
         <div className="space-y-2 text-sm">
@@ -55,7 +55,7 @@ export function TracePanel({ trace }: Props) {
             </code>
           </div>
           <div className="text-foreground">
-            <b>u ∈ [0,1) (сервер):</b>{" "}
+            <b>u ∈ [0,1) (server):</b>{" "}
             <code className="text-xs font-mono text-muted-foreground bg-muted px-1 rounded">
               {trace.u01.decimal18}
             </code>{" "}

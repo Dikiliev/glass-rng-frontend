@@ -37,10 +37,10 @@ export function MultiSamplePanel({
     seedHex: string | null;
     drawId: string;
 }) {
-    const [kStr, setKStr] = useState("5");       // K — сколько чисел
-    const [nStr, setNStr] = useState("100");     // N — верхняя граница (диапазон [1..N])
-    const [unique, setUnique] = useState(true);  // неповторяющиеся
-    const [labelBase, setLabelBase] = useState("SET/v1"); // base label для domain separation
+    const [kStr, setKStr] = useState("5");       // K — how many numbers
+    const [nStr, setNStr] = useState("100");     // N — upper bound (range [1..N])
+    const [unique, setUnique] = useState(true);  // unique only
+    const [labelBase, setLabelBase] = useState("SET/v1"); // base label for domain separation
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [items, setItems] = useState<RangeResult[]>([]);
@@ -75,7 +75,7 @@ export function MultiSamplePanel({
 
         if (unique && k > n) {
             setError(
-                "K не может быть больше N при включённой опции «неповторяющиеся»."
+                "K cannot be greater than N when 'unique only' is enabled."
             );
             return;
         }
@@ -96,25 +96,25 @@ export function MultiSamplePanel({
                     n1: "1",
                     n2: String(n),
                     label,
-                    draw_id: drawId, // хотим ещё и SSE-лог; можно убрать при необходимости
+                    draw_id: drawId, // we want SSE log as well; optional
                 })) as RangeResult;
 
                 const vNum = Number(data.value);
 
                 if (unique && seen.has(vNum)) {
-                    // дубликат — пробуем дальше
+                    // duplicate — try again
                     continue;
                 }
 
                 seen.add(vNum);
-                // сохраним label локально на всякий случай
+                // keep label locally just in case
                 results.push({ ...data, label });
                 setItems([...results]); // обновляем прогресс на UI
                 setProgress(results.length);
             }
         } catch (e) {
             console.error(e);
-            setError("Не удалось сгенерировать набор. Проверьте сеть и попробуйте ещё раз.");
+            setError("Failed to generate set. Check network and retry.");
         } finally {
             setLoading(false);
         }
@@ -139,7 +139,7 @@ export function MultiSamplePanel({
                     alignItems="center"
                     sx={{ mb: 1 }}
                 >
-                    <Typography variant="subtitle1">Набор чисел</Typography>
+                    <Typography variant="subtitle1">Number set</Typography>
                 </Stack>
 
                 <Stack
@@ -148,7 +148,7 @@ export function MultiSamplePanel({
                     alignItems="center"
                 >
                     <TextField
-                        label="K (кол-во)"
+                        label="K (count)"
                         size="small"
                         value={kStr}
                         onChange={(e) => setKStr(e.target.value)}
@@ -156,7 +156,7 @@ export function MultiSamplePanel({
                         inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
                     />
                     <TextField
-                        label="До N"
+                        label="Up to N"
                         size="small"
                         value={nStr}
                         onChange={(e) => setNStr(e.target.value)}
@@ -170,7 +170,7 @@ export function MultiSamplePanel({
                                 onChange={(e) => setUnique(e.target.checked)}
                             />
                         }
-                        label="неповторяющиеся"
+                        label="unique only"
                     />
                     <TextField
                         label="Label (base)"
@@ -180,7 +180,7 @@ export function MultiSamplePanel({
                         sx={{ width: 240 }}
                     />
                     <Button onClick={run} disabled={!canRun || loading} variant="contained">
-                        {loading ? `Генерация… (${progress}/${isFinite(k) ? k : 0})` : "Сгенерировать набор"}
+                        {loading ? `Generating… (${progress}/${isFinite(k) ? k : 0})` : "Generate set"}
                     </Button>
                 </Stack>
 
@@ -203,18 +203,18 @@ export function MultiSamplePanel({
                             </Typography>
 
                             <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
-                                <Chip label={`элементов: ${items.length}`} />
+                                <Chip label={`items: ${items.length}`} />
                                 {meta && (
                                     <>
-                                        <Chip label={`диапазон: [${meta.lo}..${meta.hi}]`} />
-                                        <Chip label={`размер: ${meta.rangeSize}`} />
-                                        <Chip label={`сумма attempts: ${meta.attemptsSum}`} />
+                                        <Chip label={`range: [${meta.lo}..${meta.hi}]`} />
+                                        <Chip label={`size: ${meta.rangeSize}`} />
+                                        <Chip label={`attempts total: ${meta.attemptsSum}`} />
                                         {meta.rejectedSum > 0 && (
-                                            <Chip color="warning" label={`внутр. rejected: ${meta.rejectedSum}`} />
+                                            <Chip color="warning" label={`internal rejected: ${meta.rejectedSum}`} />
                                         )}
                                     </>
                                 )}
-                                {unique && <Chip color="success" label="без повторов" />}
+                                {unique && <Chip color="success" label="no duplicates" />}
                             </Stack>
 
                             <Stack spacing={0.5} sx={{ mt: 1 }}>
@@ -257,16 +257,16 @@ export function MultiSamplePanel({
                             </Stack>
 
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                Независимые выборки через domain separation (label). При опции «неповторяющиеся» дубликаты отбрасываются до набора K уникальных значений.
+                                Independent samples via domain separation (label). With 'unique only', duplicates are discarded until K unique values.
                             </Typography>
 
                             <Stack direction="row" spacing={1} sx={{ pt: 1 }}>
-                                <Tooltip title="Скопировать CSV">
+                                <Tooltip title="Copy CSV">
                                     <Button variant="outlined" size="small" onClick={copyCSV} startIcon={<ContentCopyIcon fontSize="small" />}>
                                         CSV
                                     </Button>
                                 </Tooltip>
-                                <Tooltip title="Скопировать JSON">
+                                <Tooltip title="Copy JSON">
                                     <Button variant="outlined" size="small" onClick={copyJSON} startIcon={<ContentCopyIcon fontSize="small" />}>
                                         JSON
                                     </Button>

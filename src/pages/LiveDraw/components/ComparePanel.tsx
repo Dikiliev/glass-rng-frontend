@@ -60,21 +60,21 @@ export function ComparePanel({ pub, pub_loc }: Props) {
     <Card className="border-border bg-card/50">
       <CardContent className="p-4">
         <div className="text-lg font-semibold text-foreground mb-4">
-          Влияние шума: до/после смешивания
+          Noise impact: before/after mixing
           <span className="text-sm font-normal text-muted-foreground ml-2">
-            {changed ? "— результат изменился" : "— результат совпал"}
+            {changed ? "— result changed" : "— result matched"}
           </span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <SideCard
-            title="Только блоки (PUB)"
+            title="Blocks only (PUB)"
             seedHex={pub.seedHex}
             chachaFirst16Hex={pub.chachaFirst16Hex}
             u64={pub.u64}
             u01dec={pub.u01.decimal18}
           />
           <SideCard
-            title="Блоки + локальный шум (PUB+LOC)"
+            title="Blocks + local noise (PUB+LOC)"
             seedHex={pub_loc.seedHex}
             chachaFirst16Hex={pub_loc.chachaFirst16Hex}
             u64={pub_loc.u64}

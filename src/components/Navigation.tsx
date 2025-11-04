@@ -5,17 +5,17 @@ const Navigation = () => {
   const location = useLocation();
   
   const navItems = [
-    { path: "/", label: "Генерация", icon: Home },
-    { path: "/history", label: "История", icon: History },
-    { path: "/about", label: "О проекте", icon: Info },
+    { path: "/", label: "Generate", icon: Home },
+    { path: "/history", label: "History", icon: History },
+    { path: "/about", label: "About", icon: Info },
   ];
   
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="container mx-auto px-6 py-4">
+      <div className="mx-auto px-6 py-4 max-w-[1200px]">
         <div className="flex items-center justify-between">
           <Link to="/" className="text-xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            Glass RNG
+            Most Random Number
           </Link>
           <div className="flex gap-1">
             {navItems.map((item) => {

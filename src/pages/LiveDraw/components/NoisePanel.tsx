@@ -32,11 +32,11 @@ export function NoisePanel({ drawId, locBytes, locPackets, locRoot }: Props) {
         <Card variant="outlined">
             <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
-                    Добавить локальный шум (до смешивания)
+                    Add local noise (before mixing)
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                    Двигайте мышью / нажимайте клавиши → собираем микрозадержки. Затем отправьте на сервер —
-                    сырые байты попадут в транскрипт и будут учтены как независимый источник «LOC».
+                    Move mouse / press keys → we collect micro‑jitter. Then send to server —
+                    raw bytes will be included in transcript and counted as independent “LOC”.
                 </Typography>
                 <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                     <Button size="small" variant="outlined" onClick={startCapture}>Start capture</Button>
@@ -50,7 +50,7 @@ export function NoisePanel({ drawId, locBytes, locPackets, locRoot }: Props) {
                     {locRoot && <Chip label={`root: ${locRoot.slice(0, 10)}…`} />}
                 </Stack>
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                    После добавления шума перезапустите тираж — в “Sources” появится <b>LOC</b>.
+                    After adding noise, restart the draw — in “Sources” you will see <b>LOC</b>.
                 </Typography>
             </CardContent>
         </Card>

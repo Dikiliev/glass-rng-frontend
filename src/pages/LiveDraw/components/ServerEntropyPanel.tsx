@@ -47,7 +47,7 @@ export function ServerEntropyPanel({ locBytes, locPackets, locRoot, summary }: P
           )}
         </div>
         <div className="text-xs text-muted-foreground">
-          Эти байты автоматически собираются сервером (OS RNG + CPU jitter) до начала смешивания.
+          These bytes are collected on the server (OS RNG + CPU jitter) before mixing.
         </div>
       </CardContent>
     </Card>

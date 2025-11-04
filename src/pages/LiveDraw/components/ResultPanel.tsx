@@ -13,7 +13,7 @@ export function ResultPanel({ seedHex, result }: Props) {
 
   return (
     <>
-      <div className="text-sm font-medium text-muted-foreground mb-2">Итог (после смешивания)</div>
+      <div className="text-sm font-medium text-muted-foreground mb-2">Final (after mixing)</div>
       <Card className="border-border bg-card/50">
         <CardContent className="p-4">
           <div className="text-xs text-muted-foreground mb-2">Seed (HKDF)</div>

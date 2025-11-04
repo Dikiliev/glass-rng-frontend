@@ -35,19 +35,19 @@ export function useDrawSSE(drawId: string) {
     const [result, setResult] = useState<string | null>(null);
     const [trace, setTrace] = useState<MixTraceEvent | null>(null);
 
-    // локальный шум — текущий прогресс
+    // local noise — current progress
     const [locBytes, setLocBytes] = useState(0);
     const [locPackets, setLocPackets] = useState(0);
     const [locRoot, setLocRoot] = useState<string | null>(null);
 
-    // окно сбора
+    // collection window
     const [collectOpen, setCollectOpen] = useState(false);
     const [collectRemainMs, setCollectRemainMs] = useState<number | null>(null);
 
-    // сводка шума
+    // noise summary
     const [locSummary, setLocSummary] = useState<CollectSummaryEvent | null>(null);
 
-    // сравнение результатов (PUB vs PUB+LOC)
+    // results compare (PUB vs PUB+LOC)
     const [compare, setCompare] = useState<MixCompareEvent | null>(null);
 
     useEffect(() => {

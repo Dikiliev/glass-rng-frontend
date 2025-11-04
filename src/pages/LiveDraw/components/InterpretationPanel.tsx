@@ -11,16 +11,16 @@ export function InterpretationPanel({ result }: Props) {
         <Card variant="outlined">
             <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
-                    Интерпретация результата
+                    Interpretation
                 </Typography>
                 {!result ? (
                     <Typography variant="body2" color="text.secondary">
-                        Ждём результат…
+                        Waiting for result…
                     </Typography>
                 ) : (
                     <>
                         <Typography variant="body2" gutterBottom>
-                            Равномерное в [0,1) (клиент, BigInt)
+                            Uniform in [0,1) (client, BigInt)
                         </Typography>
                         <Box sx={{ fontFamily: "monospace", fontSize: 14 }}>
                             {u64ToDecimalString(BigInt(result), 18)}
@@ -31,7 +31,7 @@ export function InterpretationPanel({ result }: Props) {
                         <Divider sx={{ my: 2 }} />
 
                         <Typography variant="body2" gutterBottom>
-                            Равномерное в 0..N-1 (демо)
+                            Uniform in 0..N-1 (demo)
                         </Typography>
                         <Stack direction="row" spacing={2} alignItems="center">
                             <TextField size="small" label="N" value={nStr} onChange={(e) => setNStr(e.target.value)} />
@@ -39,13 +39,13 @@ export function InterpretationPanel({ result }: Props) {
                                 let N: bigint;
                                 try { N = BigInt(nStr); } catch { N = 0n; }
                                 if (N <= 1n) {
-                                    return <Typography variant="body2" color="text.secondary">Введите N ≥ 2</Typography>;
+                                    return <Typography variant="body2" color="text.secondary">Enter N ≥ 2</Typography>;
                                 }
                                 const { value, biased } = modNUnbiasedPreview(BigInt(result), N);
                                 return (
                                     <Stack direction="row" spacing={2} alignItems="center">
                                         <Chip label={`x mod N = ${value.toString()}`} />
-                                        {biased && <Alert severity="warning" sx={{ py: 0 }}>Для полной честности нужен rejection (на бэке).</Alert>}
+                                        {biased && <Alert severity="warning" sx={{ py: 0 }}>Full fairness requires rejection (on backend).</Alert>}
                                     </Stack>
                                 );
                             })()}

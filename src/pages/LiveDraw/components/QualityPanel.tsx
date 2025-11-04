@@ -28,12 +28,12 @@ export function QualityPanel({ seedHex }: Props) {
     };
 
     return (
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{ backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'divider' }}>
             <CardContent>
-                <Typography variant="subtitle1" gutterBottom>Проверка качества (выгрузка бит)</Typography>
+                <Typography variant="subtitle1" gutterBottom>Quality check (bitstream export)</Typography>
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems="center">
                     <TextField
-                        label="Количество бит"
+                        label="Bits count"
                         size="small"
                         type="number"
                         value={bits}
@@ -41,23 +41,23 @@ export function QualityPanel({ seedHex }: Props) {
                         sx={{ width: 180 }}
                         inputProps={{ min: 1 }}
                     />
-                    <TextField label="Формат" select size="small" value={fmt} onChange={(e) => setFmt(e.target.value as any)} sx={{ width: 160 }}>
+                    <TextField label="Format" select size="small" value={fmt} onChange={(e) => setFmt(e.target.value as any)} sx={{ width: 160 }}>
                         <MenuItem value="txt">TXT (ASCII 0/1)</MenuItem>
-                        <MenuItem value="bin">BIN (сырые байты)</MenuItem>
+                        <MenuItem value="bin">BIN (raw bytes)</MenuItem>
                     </TextField>
                     {fmt === "txt" && (
-                        <TextField label="Разделитель" select size="small" value={sep} onChange={(e) => setSep(e.target.value as any)} sx={{ width: 180 }}>
-                            <MenuItem value="none">Без разделителей</MenuItem>
-                            <MenuItem value="newline">По одному биту в строке</MenuItem>
+                        <TextField label="Separator" select size="small" value={sep} onChange={(e) => setSep(e.target.value as any)} sx={{ width: 180 }}>
+                            <MenuItem value="none">No separators</MenuItem>
+                            <MenuItem value="newline">One bit per line</MenuItem>
                         </TextField>
                     )}
                     <Button variant="contained" startIcon={<DownloadIcon />} onClick={download} disabled={disabled}>
-                        Скачать
+                        Download
                     </Button>
                 </Stack>
                 {!seedHex && (
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Сначала дождитесь результата тиража — тогда можно выгрузить биты из его seed.
+                        Wait for the draw to finish — then export bits from its seed.
                     </Typography>
                 )}
             </CardContent>

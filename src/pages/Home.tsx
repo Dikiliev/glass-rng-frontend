@@ -67,7 +67,7 @@ export default function Home() {
     }
 
     return (
-        <Container sx={{ my: { xs: 4, md: 6 }, pb: 4 }}>
+        <Container maxWidth="lg" sx={{ mt: 12, mb: 6, pb: 4 }}>
             {/* HERO */}
             <Box
                 sx={(theme) => ({
@@ -85,48 +85,42 @@ export default function Home() {
                         left: 0,
                         right: 0,
                         height: "2px",
-                        background: "linear-gradient(90deg, transparent, #9945FF, #FF6B9D, transparent)",
+                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
                         animation: "shimmer 3s infinite",
                     },
                 })}
             >
                 <Stack spacing={2}>
-                    <Chip
-                        icon={<ShieldRoundedIcon />}
-                        label="Проверяемый ГСЧ — воспроизводимо и прозрачно"
-                        color="default"
-                        variant="outlined"
-                        sx={{ alignSelf: "start" }}
-                    />
+                    <Chip icon={<ShieldRoundedIcon />} label="Verifiable RNG — reproducible and transparent" color="default" variant="outlined" sx={{ alignSelf: "start" }} />
 
                     <Typography 
                         variant="h1" 
                         sx={{ 
                             fontSize: { xs: 32, md: 48 }, 
                             letterSpacing: -0.5,
-                            background: "linear-gradient(135deg, #FFFFFF 0%, #9945FF 50%, #FF6B9D 100%)",
+                            background: "linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 100%)",
                             WebkitBackgroundClip: "text",
                             WebkitTextFillColor: "transparent",
                             fontWeight: 700,
                         }}
                     >
-                        Честные тиражи на публичной энтропии
+                        Verifiable draws on public entropy
                     </Typography>
 
                     <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 800 }}>
-                        Берём финализированные блоки Solana, смешиваем с локальным шумом, получаем <code>seed</code> через HKDF
-                        и генерируем поток ChaCha20. Каждый шаг — видим и воспроизводим по <code>drawId</code>.
+                        We take finalized Solana blocks, mix with server noise, derive <code>seed</code> via HKDF,
+                        and generate ChaCha20 stream. Every step is visible and reproducible by <code>drawId</code>.
                     </Typography>
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems="center">
-                        <Chip color="success" label={`Автогенерация на сервере каждые 10 секунд`} />
+                        <Chip color="success" label={`Server auto-generation every 10 seconds`} />
                         <Button
                             size="large"
                             variant="outlined"
                             startIcon={<HistoryRoundedIcon />}
                             onClick={() => nav("/history")}
                         >
-                            История
+                            History
                         </Button>
                     </Stack>
 
@@ -136,7 +130,7 @@ export default function Home() {
                             <Card variant="outlined">
                                 <CardContent>
                                     <Stack spacing={2}>
-                                        <Typography variant="subtitle1">Быстрый старт</Typography>
+                                        <Typography variant="subtitle1">Quick start</Typography>
 
                                         <TextField
                                             label="Draw ID"
@@ -146,7 +140,7 @@ export default function Home() {
                                             InputProps={{
                                                 endAdornment: (
                                                     <InputAdornment position="end">
-                                                        <Tooltip title="Скопировать">
+                                                        <Tooltip title="Copy">
                                                             <IconButton
                                                                 edge="end"
                                                                 onClick={() => navigator.clipboard.writeText(drawId)}
@@ -161,9 +155,7 @@ export default function Home() {
                                         />
 
                                         <Stack spacing={1}>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Кол-во финализированных блоков Solana
-                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">Number of finalized Solana blocks</Typography>
                                             <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center">
                                                 <TextField
                                                     label="Blocks"
@@ -187,51 +179,26 @@ export default function Home() {
                                                         </ToggleButton>
                                                     ))}
                                                 </ToggleButtonGroup>
-                                                <Button variant="outlined" onClick={() => setDrawId(`draw-${Date.now()}`)}>
-                                                    Новый ID
-                                                </Button>
+                                                <Button variant="outlined" onClick={() => setDrawId(`draw-${Date.now()}`)}>New ID</Button>
                                             </Stack>
                                         </Stack>
 
-                                        <Button
-                                            variant="outlined"
-                                            color={'secondary'}
-                                            onClick={() => setAdvOpen((v) => !v)}
-                                            sx={{ alignSelf: "start" }}
-                                        >
-                                            Advanced
-                                        </Button>
+                                        <Button variant="outlined" color={'secondary'} onClick={() => setAdvOpen((v) => !v)} sx={{ alignSelf: "start" }}>Advanced</Button>
 
                                         <Collapse in={advOpen} unmountOnExit>
                                             <Stack spacing={2}>
-                                                <TextField
-                                                    label="Окно сбора локального шума, ms (collect_ms)"
-                                                    type="number"
-                                                    value={collectMs}
-                                                    onChange={(e) => setCollectMs(parseInt(e.target.value || "0", 10))}
-                                                    sx={{ width: 320 }}
-                                                    helperText="0 — отключить сбор"
-                                                />
+                                                <TextField label="Local noise collection window, ms (collect_ms)" type="number" value={collectMs} onChange={(e) => setCollectMs(parseInt(e.target.value || "0", 10))} sx={{ width: 320 }} helperText="0 — disable collection" />
                                                 <Stack direction="row" spacing={2} alignItems="center">
                                                     <Stack direction="row" spacing={1} alignItems="center">
                                                         <Switch
                                                             checked={requireLoc}
                                                             onChange={(e) => setRequireLoc(e.target.checked)}
                                                         />
-                                                        <Typography variant="body2">Требовать локальный шум</Typography>
+                                                        <Typography variant="body2">Require local noise</Typography>
                                                     </Stack>
-                                                    <TextField
-                                                        label="Мин. LOC bytes"
-                                                        type="number"
-                                                        value={minLocBytes}
-                                                        onChange={(e) => setMinLocBytes(parseInt(e.target.value || "0", 10))}
-                                                        sx={{ width: 220 }}
-                                                        disabled={!requireLoc}
-                                                    />
+                                                        <TextField label="Min LOC bytes" type="number" value={minLocBytes} onChange={(e) => setMinLocBytes(parseInt(e.target.value || "0", 10))} sx={{ width: 220 }} disabled={!requireLoc} />
                                                 </Stack>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    Параметры добавятся в query и будут учтены бэкендом.
-                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary">Parameters will be added to query and applied on backend.</Typography>
                                             </Stack>
                                         </Collapse>
                                     </Stack>
@@ -242,32 +209,21 @@ export default function Home() {
                         {/* Why fair */}
                         <Grid size={{ xs: 12, md: 4 }}>
                             <Card variant="outlined" sx={{ height: "100%" }}>
-                                <CardHeader title="Почему это честно" />
+                            <CardHeader title="Why fair" />
                                 <CardContent>
                                     <List dense disablePadding>
                                         <ListItem disableGutters sx={{ py: 0.5 }}>
-                                            <ListItemText
-                                                primaryTypographyProps={{ variant: "body2" }}
-                                                primary="Публичная энтропия: финализированные блоки (beacon)"
-                                            />
+                                            <ListItemText primaryTypographyProps={{ variant: "body2" }} primary="Public entropy: finalized blocks (beacon)" />
                                         </ListItem>
                                         <ListItem disableGutters sx={{ py: 0.5 }}>
-                                            <ListItemText
-                                                primaryTypographyProps={{ variant: "body2" }}
-                                                primary="HKDF + domain separation через label"
-                                            />
+                                            <ListItemText primaryTypographyProps={{ variant: "body2" }} primary="HKDF + domain separation via label" />
                                         </ListItem>
                                         <ListItem disableGutters sx={{ py: 0.5 }}>
-                                            <ListItemText
-                                                primaryTypographyProps={{ variant: "body2" }}
-                                                primary="ChaCha20 → u64 → нормализация через rejection"
-                                            />
+                                            <ListItemText primaryTypographyProps={{ variant: "body2" }} primary="ChaCha20 → u64 → normalization via rejection" />
                                         </ListItem>
                                     </List>
                                     <Divider sx={{ my: 1.5 }} />
-                                    <Typography variant="caption" color="text.secondary">
-                                        Любой может воспроизвести расчёт по drawId, beacon, seed и трассировке.
-                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">Anyone can reproduce by drawId, beacon, seed, and trace.</Typography>
                                 </CardContent>
                             </Card>
                         </Grid>
@@ -278,11 +234,11 @@ export default function Home() {
             {/* FEATURES */}
             <Grid container spacing={2} sx={{ mt: 3 }}>
                 <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                    <Card variant="outlined">
-                        <CardHeader title="Live-визуализация" />
+                    <Card variant="outlined" sx={{ backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'divider' }}>
+                        <CardHeader title="Live visualization" />
                         <CardContent>
                             <Typography variant="body2" color="text.secondary">
-                                События: <b>commit → blocks → mixing → result</b>. Всё в реальном времени через SSE.
+                                Events: <b>commit → blocks → mixing → result</b>. Real-time via SSE.
                             </Typography>
                         </CardContent>
                     </Card>
@@ -290,17 +246,15 @@ export default function Home() {
 
                 <Grid size={{ xs: 12, md: 6, lg: 4 }}>
                     <Card variant="outlined">
-                        <CardHeader title="Битовые тесты" />
+                            <CardHeader title="Bitstream tests" />
                         <CardContent>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                Скачай ≥1M бит по seed и запусти NIST/Dieharder.
-                            </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Download ≥1M bits by seed and run NIST/Dieharder.</Typography>
                             <Button
                                 variant="outlined"
                                 onClick={() => nav("/history")}
                                 startIcon={<ScienceRoundedIcon />}
                             >
-                                Выбрать seed в истории
+                                Pick seed in history
                             </Button>
                         </CardContent>
                     </Card>
@@ -308,11 +262,9 @@ export default function Home() {
 
                 <Grid size={{ xs: 12, md: 12, lg: 4 }}>
                     <Card variant="outlined">
-                        <CardHeader title="Диапазоны и наборы" />
+                            <CardHeader title="Ranges and sets" />
                         <CardContent>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                Честная интерпретация в [min..max] и генерация наборов без смещения (rejection).
-                            </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Fair mapping into [min..max] and unbiased set sampling (rejection).</Typography>
                         </CardContent>
                     </Card>
                 </Grid>

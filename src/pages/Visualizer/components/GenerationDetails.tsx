@@ -47,8 +47,8 @@ function SectionAccordion({
   summaryHint?: string;
 }) {
   return (
-    <Accordion type="single" collapsible>
-      <AccordionItem value={title}>
+    <Accordion type="single" collapsible className="bg-transparent">
+      <AccordionItem value={title} className="bg-transparent border-0 backdrop-blur-0">
         <AccordionTrigger className="hover:no-underline">
           <div className="flex items-center justify-between w-full pr-4">
             <div className="flex items-center gap-2">
@@ -58,7 +58,7 @@ function SectionAccordion({
             {summaryHint && <span className="text-xs text-muted-foreground">{summaryHint}</span>}
           </div>
         </AccordionTrigger>
-        <AccordionContent>{children}</AccordionContent>
+        <AccordionContent className="bg-transparent backdrop-blur-0">{children}</AccordionContent>
       </AccordionItem>
     </Accordion>
   );
@@ -91,12 +91,12 @@ export function GenerationDetails({
   return (
     <Accordion type="single" collapsible className="w-full mb-8">
       <AccordionItem value="details">
-        <AccordionTrigger className="text-lg font-semibold">Детали генерации</AccordionTrigger>
+        <AccordionTrigger className="text-lg font-semibold">Generation details</AccordionTrigger>
         <AccordionContent>
           <div className="space-y-6">
-            {/* ID генерации */}
+            {/* Draw ID */}
             <div className="space-y-2">
-              <div className="text-sm font-medium text-muted-foreground">ID генерации</div>
+              <div className="text-sm font-medium text-muted-foreground">Draw ID</div>
               <div className="flex items-center gap-2">
                 <code className="text-sm font-mono bg-muted px-2 py-1 rounded text-foreground">
                   {activeDrawId}
@@ -111,16 +111,16 @@ export function GenerationDetails({
               </div>
               <div className="flex gap-2 flex-wrap">
                 <div className="text-xs bg-muted px-2 py-1 rounded text-foreground">
-                  Блоков: {blocksCount}
+                  Blocks: {blocksCount}
                 </div>
                 {inputs.includes("PUB") && (
                   <div className="text-xs bg-muted px-2 py-1 rounded text-foreground">
-                    Источник: блоки (PUB)
+                    Source: blocks (PUB)
                   </div>
                 )}
                 {inputs.includes("LOC") && (
                   <div className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
-                    Шум сервера (LOC)
+                    Server noise (LOC)
                   </div>
                 )}
                 {locBytes > 0 && (
@@ -133,7 +133,7 @@ export function GenerationDetails({
 
             <Separator />
 
-            {/* Статус бар */}
+            {/* Status bar */}
             <div className="space-y-2">
               <StatusBar
                 status={status}
@@ -144,13 +144,13 @@ export function GenerationDetails({
               />
             </div>
 
-            {/* Результат (технический) */}
+            {/* Result (technical) */}
             {seedHex && (
               <>
                 <Separator />
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium text-muted-foreground">Результат (seed)</div>
+                    <div className="text-sm font-medium text-muted-foreground">Result (seed)</div>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -159,55 +159,55 @@ export function GenerationDetails({
                       <Copy className="w-4 h-4" />
                     </Button>
                   </div>
-                  <ResultPanel seedHex={seedHex} result={result} />
+                  <ResultPanel seedHex={seedHex} result={typeof result === 'number' ? String(result) : result} />
                 </div>
               </>
             )}
 
-            {/* Источник и beacon */}
+            {/* Source & beacon */}
             <Separator />
             <SectionAccordion
-              title="Источник и beacon"
+              title="Source & beacon"
               done={srcDone}
-              summaryHint={srcDone ? "Блоки найдены" : "Ожидание блоков"}
+              summaryHint={srcDone ? "Blocks found" : "Waiting for blocks"}
             >
               <BlocksPanel blocks={blocksList} beaconHex={beaconHex} />
             </SectionAccordion>
 
-            {/* Влияние шума */}
+            {/* Noise impact */}
             {compare && (
               <>
                 <Separator />
                 <SectionAccordion
-                  title="Влияние шума (PUB vs PUB+LOC)"
+                  title="Noise impact (PUB vs PUB+LOC)"
                   done={noiseDone && mixDone}
-                  summaryHint="Сравнение готово"
+                  summaryHint="Comparison ready"
                 >
                   <ComparePanel pub={compare.pub} pub_loc={compare.pub_loc} />
                 </SectionAccordion>
               </>
             )}
 
-            {/* Трассировка */}
+            {/* Trace */}
             {trace && (
               <>
                 <Separator />
                 <SectionAccordion
-                  title="Как получено число (трассировка)"
+                  title="How the number is derived (trace)"
                   done={mixDone}
-                  summaryHint="Сид, ChaCha и u64 зафиксированы"
+                  summaryHint="Seed, ChaCha and u64 recorded"
                 >
                   <TracePanel trace={trace} />
                 </SectionAccordion>
               </>
             )}
 
-            {/* Серверный шум */}
+            {/* Server noise */}
             <Separator />
             <SectionAccordion
-              title="Серверный шум (детали)"
+              title="Server noise (details)"
               done={noiseDone}
-              summaryHint={noiseDone ? "Шум собран" : "Сбор шума"}
+              summaryHint={noiseDone ? "Noise collected" : "Collecting noise"}
             >
               <ServerEntropyPanel
                 locBytes={locBytes}
@@ -226,9 +226,9 @@ export function GenerationDetails({
               />
             </SectionAccordion>
 
-            {/* Лог */}
+            {/* Log */}
             <Separator />
-            <SectionAccordion title="Live log" done={resultDone} summaryHint="Технические события">
+            <SectionAccordion title="Live log" done={resultDone} summaryHint="Technical events">
               <LiveLog events={events} />
             </SectionAccordion>
           </div>

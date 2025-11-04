@@ -30,42 +30,42 @@ const tokens = {
     radius: 16,
     radiusLg: 20,
     ring: (hex: string) => `0 0 0 3px ${alpha(hex, 0.3)}, 0 0 20px ${alpha(hex, 0.2)}`,
-    // Solana цвета: фиолетовый, розовый, синий, циан
+    // Minimal grayscale palette (monochrome)
     brand: {
-        purple: "#9945FF",    // Solana purple
-        pink:   "#FF6B9D",    // Solana pink accent
-        blue:   "#14F195",    // Solana green/cyan
-        cyan:   "#00D4FF",    // Bright cyan
-        violet: "#C77DFF",    // Light purple
-        green:  "#14F195",    // Solana green
-        orange: "#FFB84D",
-        red:    "#FF6B6B",
-        yellow: "#FFD93D",
+        purple: "#FFFFFF",    // use white as primary accent
+        pink:   "#FFFFFF",
+        blue:   "#FFFFFF",
+        cyan:   "#FFFFFF",
+        violet: "#FFFFFF",
+        green:  "#FFFFFF",
+        orange: "#FFFFFF",
+        red:    "#FFFFFF",
+        yellow: "#FFFFFF",
     },
     light: {
-        bg:        "#0A0E27",      // Deep dark blue
-        paper:     "#141B3A",      // Dark purple-blue
-        divider:   "rgba(153, 69, 255, 0.2)",
+        bg:        "#000000",
+        paper:     "#0B0B0B",
+        divider:   "rgba(255, 255, 255, 0.12)",
         textPri:   "#FFFFFF",
-        textSec:   "rgba(255, 255, 255, 0.7)",
-        codeBg:    "#1A2342",
-        scrollbar: "rgba(153, 69, 255, 0.3)",
+        textSec:   "rgba(255, 255, 255, 0.6)",
+        codeBg:    "#0F0F0F",
+        scrollbar: "rgba(255, 255, 255, 0.25)",
     },
     dark: {
-        bg:        "#0A0E27",      // Deep dark blue background
-        paper:     "#141B3A",      // Dark purple-blue cards
-        divider:   "rgba(153, 69, 255, 0.3)",
+        bg:        "#000000",
+        paper:     "#0B0B0B",
+        divider:   "rgba(255, 255, 255, 0.12)",
         textPri:   "#FFFFFF",
-        textSec:   "rgba(255, 255, 255, 0.65)",
-        codeBg:    "#1A2342",
-        scrollbar: "rgba(153, 69, 255, 0.4)",
+        textSec:   "rgba(255, 255, 255, 0.6)",
+        codeBg:    "#0F0F0F",
+        scrollbar: "rgba(255, 255, 255, 0.25)",
     }
 };
 
 // ---------- Glow Shadows (Solana spark effects) ----------
 const buildShadows = (): string[] => {
-    const glowPurple = "rgba(153, 69, 255, 0.4)";
-    const glowPink = "rgba(255, 107, 157, 0.3)";
+    const glowPurple = "rgba(255, 255, 255, 0.35)";
+    const glowPink = "rgba(255, 255, 255, 0.2)";
     const darkBase = "rgba(0, 0, 0, 0.5)";
     
     const s = (y: number, blur: number, spread = 0, colors: string[]) => {
@@ -117,12 +117,12 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
     const base = createTheme({
         palette: {
             mode: "dark", // Всегда темная тема для Solana стиля
-            primary:   { main: brand.purple },
-            secondary: { main: brand.pink },
-            success:   { main: brand.green },
-            warning:   { main: brand.orange },
-            error:     { main: brand.red },
-            info:      { main: brand.cyan },
+            primary:   { main: t.textPri },
+            secondary: { main: t.textPri },
+            success:   { main: t.textPri },
+            warning:   { main: t.textPri },
+            error:     { main: t.textPri },
+            info:      { main: t.textPri },
             background: {
                 default: t.bg,
                 paper:   t.paper,
@@ -133,9 +133,9 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                 secondary: t.textSec,
             },
             action: {
-                hover: alpha(brand.purple, 0.2),
-                selected: alpha(brand.purple, 0.25),
-                focus: alpha(brand.purple, 0.3),
+                hover: alpha("#FFFFFF", 0.08),
+                selected: alpha("#FFFFFF", 0.1),
+                focus: alpha("#FFFFFF", 0.12),
                 disabled: alpha(t.textPri, 0.32),
                 disabledBackground: alpha(t.textPri, 0.06),
             },
@@ -195,20 +195,15 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                     },
                     html: { 
                         height: "100%",
-                        background: `linear-gradient(135deg, ${t.bg} 0%, #0F1629 100%)`,
+                        backgroundColor: t.bg,
                     },
                     body: {
                         minHeight: "100%",
                         backgroundColor: t.bg,
-                        backgroundImage: `
-                            radial-gradient(circle at 20% 50%, ${alpha(brand.purple, 0.15)} 0%, transparent 50%),
-                            radial-gradient(circle at 80% 80%, ${alpha(brand.pink, 0.1)} 0%, transparent 50%),
-                            radial-gradient(circle at 40% 20%, ${alpha(brand.cyan, 0.08)} 0%, transparent 50%)
-                        `,
-                        backgroundAttachment: "fixed",
                         WebkitFontSmoothing: "antialiased",
                         MozOsxFontSmoothing: "grayscale",
                         textRendering: "optimizeLegibility",
+                        color: t.textPri,
                     },
                     a: {
                         color: brand.purple,
@@ -264,7 +259,7 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                         border: `1px solid ${t.divider}`,
                         boxShadow: buildShadows()[2],
                         borderRadius: tokens.radiusLg,
-                        background: alpha(t.paper, 0.8),
+                        background: "rgba(255,255,255,0.06)",
                         transition: "all 0.3s ease",
                         "&:hover": {
                             boxShadow: buildShadows()[4],
@@ -279,14 +274,14 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                         border: `1px solid ${t.divider}`,
                         boxShadow: buildShadows()[2],
                         borderRadius: tokens.radiusLg,
-                        background: alpha(t.paper, 0.9),
+                        background: "rgba(255,255,255,0.06)",
                         backdropFilter: "blur(10px)",
                         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                         "&:hover": {
                             transform: "translateY(-4px)",
                             boxShadow: buildShadows()[6],
                             borderColor: alpha(brand.purple, 0.6),
-                            background: alpha(t.paper, 0.95),
+                            background: "rgba(255,255,255,0.08)",
                         },
                     },
                 },
@@ -450,13 +445,12 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                 styleOverrides: {
                     root: {
                         borderRadius: tokens.radiusLg,
-                        border: `2px solid ${t.divider}`,
+                        border: `1px solid ${t.divider}`,
                         boxShadow: buildShadows()[1],
-                        background: t.paper,
+                        background: "rgba(255,255,255,0.06)",
+                        color: t.textPri,
                         "&:before": { display: "none" },
-                        "&.Mui-expanded": {
-                            borderRadius: tokens.radiusLg,
-                        },
+                        "&.Mui-expanded": { borderRadius: tokens.radiusLg },
                     },
                 },
             },
@@ -466,13 +460,13 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                         borderRadius: tokens.radiusLg,
                         minHeight: 48,
                         padding: "0 16px",
+                        backgroundColor: "transparent",
+                        color: t.textPri,
                         "&.Mui-expanded": {
                             minHeight: 48,
                             borderRadius: `${tokens.radiusLg}px ${tokens.radiusLg}px 0 0`,
                         },
-                        "&:hover": {
-                            backgroundColor: alpha(brand.blue, 0.04),
-                        },
+                        "&:hover": { backgroundColor: alpha("#ffffff", 0.04) },
                     },
                 },
             },
@@ -481,6 +475,8 @@ export function createAppTheme(mode: "light" | "dark" = "light") {
                     root: {
                         padding: "16px",
                         borderRadius: `0 0 ${tokens.radiusLg}px ${tokens.radiusLg}px`,
+                        backgroundColor: "transparent",
+                        color: t.textPri,
                     },
                 },
             },

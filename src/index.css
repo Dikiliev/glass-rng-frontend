@@ -8,39 +8,44 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Чёрный фон, белая типографика */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
 
-    --card: 240 8% 8%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 240 8% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 158 64% 52%;
-    --primary-foreground: 240 10% 3.9%;
+    /* Делает все «градиенты» белыми: три ключевых цвета = белый */
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 263 70% 50%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 193 100% 50%;
-    --accent-foreground: 240 10% 3.9%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    /* Цвет для анимационных эффектов (оставляем белым по текущей палитре) */
+    --accent-animation: 0 0% 100%;
 
-    --border: 240 5% 15%;
-    --input: 240 5% 15%;
-    --ring: 158 64% 52%;
+    --destructive: 0 62.8% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 100%;
 
     --radius: 0.75rem;
 
-    --glow-primary: 158 64% 52%;
-    --glow-secondary: 263 70% 50%;
-    --glow-accent: 193 100% 50%;
+    --glow-primary: 0 0% 100%;
+    --glow-secondary: 0 0% 100%;
+    --glow-accent: 0 0% 100%;
   }
 }
 

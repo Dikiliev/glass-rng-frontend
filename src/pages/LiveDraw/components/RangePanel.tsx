@@ -5,7 +5,7 @@ import { sampleRangeBySeed } from "../../../lib/api";
 export function RangePanel({ seedHex, drawId }: { seedHex: string | null; drawId: string }) {
   const [res, setRes] = useState<null | any>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // no explicit error UI here; rely on details panel/logs
 
   useEffect(() => {
     if (!seedHex) {
@@ -15,7 +15,7 @@ export function RangePanel({ seedHex, drawId }: { seedHex: string | null; drawId
 
     const generate = async () => {
       setLoading(true);
-      setError(null);
+      
       try {
         const data = await sampleRangeBySeed({
           seed_hex: seedHex,
@@ -27,8 +27,6 @@ export function RangePanel({ seedHex, drawId }: { seedHex: string | null; drawId
         setRes(data);
       } catch (e) {
         console.error(e);
-        const msg = (e as any)?.message || "Ошибка запроса";
-        setError(msg);
       } finally {
         setLoading(false);
       }

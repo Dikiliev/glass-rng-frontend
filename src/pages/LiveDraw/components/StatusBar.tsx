@@ -71,7 +71,7 @@ export function StatusBar({ status, inputs, statusNote, collectOpen, collectRema
 
       {collectOpen && (
         <div className="mt-2 p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg text-sm text-blue-300">
-          Сбор серверного шума…{" "}
+          Collecting server noise…{" "}
           {collectRemainMs != null ? Math.ceil(collectRemainMs / 1000) : ""} c
         </div>
       )}
