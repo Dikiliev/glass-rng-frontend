@@ -102,7 +102,7 @@ const Visualizer = () => {
         <div className="container mx-auto px-6 py-12 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Verifiable Random Generation
+            Most Random Number
             </h1>
             <p className="text-muted-foreground text-lg mb-8">Waiting for generation...</p>
           </div>
@@ -122,10 +122,10 @@ const Visualizer = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12 animate-fade-in">
             <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Verifiable Random Generation
+            Most Random Number
             </h1>
             <p className="text-muted-foreground text-lg">
-              Each generation step in real time
+            Generated using Solana blockchain + cryptographic noise
             </p>
           </div>
 
